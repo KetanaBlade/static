@@ -50,10 +50,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
 
   const handleCopyPlainText = (win: OverlappingWindow) => {
     const hours = (win.durationMinutes / 60).toFixed(win.durationMinutes % 60 === 0 ? 0 : 1);
-    const breakdown = win.memberBreakdowns
-      .map((m) => `• ${m.memberName} (${m.timezone}): ${m.dayName} ${m.startTimeFormatted} – ${m.endTimeFormatted}`)
-      .join('\n');
-    const text = `🎉 ${win.dayName} Hangout Window (${hours} hrs — ${win.startTimeFormatted} to ${win.endTimeFormatted} ${tzAbbr})\n${breakdown}`;
+    const text = `🎉 ${win.dayName} Hangout Window (${hours} hrs — ${win.startTimeFormatted} to ${win.endTimeFormatted} ${tzAbbr})`;
 
     navigator.clipboard.writeText(text);
     setCopiedTextId(win.id);

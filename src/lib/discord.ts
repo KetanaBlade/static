@@ -38,7 +38,7 @@ export function getNextOccurrenceUnix(utcSlot: SlotIndex): number {
 }
 
 /**
- * Generates a clean Discord message for an individual window using Discord's
+ * Generates a clean, concise Discord message for an individual window using Discord's
  * dynamic Unix timestamp tags (<t:UNIX:t>) which automatically format in each reader's local clock.
  */
 export function generateWindowDiscordMessage(win: OverlappingWindow): string {
@@ -52,20 +52,10 @@ export function generateWindowDiscordMessage(win: OverlappingWindow): string {
   const matchEmoji = win.overlapRatio === 1 ? '🟢' : '🟡';
   const matchText = win.overlapRatio === 1 ? '100% Free' : `${Math.round(win.overlapRatio * 100)}% Free`;
 
-  const lines: string[] = [
+  return [
     `🎉 **${win.dayName} Hangout Window (${durationHours} hrs)** — ${matchEmoji} ${matchText}`,
-    `⏰ **Every ${win.dayName}:** <t:${startUnix}:t> to <t:${endUnix}:t> *(renders in your local time)*`,
-    '',
-    `👥 **Local Times Breakdown:**`,
-  ];
-
-  if (win.memberBreakdowns && win.memberBreakdowns.length > 0) {
-    win.memberBreakdowns.forEach((m) => {
-      lines.push(`• **${m.memberName}** (${m.timezone}): ${m.dayName} ${m.startTimeFormatted} – ${m.endTimeFormatted}`);
-    });
-  }
-
-  return lines.join('\n');
+    `⏰ **${win.dayName}:** <t:${startUnix}:t> – <t:${endUnix}:t>`,
+  ].join('\n');
 }
 
 /**
@@ -82,7 +72,6 @@ export function generateDiscordSummary(
 
   const lines: string[] = [
     `📅 **${groupName} — Best Weekly Hangout Windows** 🎉`,
-    `Here are the recurring times where the group can meet:`,
     '',
   ];
 
@@ -96,23 +85,16 @@ export function generateDiscordSummary(
     const endUnix = getNextOccurrenceUnix(endUtcSlot);
 
     const matchTag = win.overlapRatio === 1
-      ? `🟢 **100% Match** (${win.overlapCount}/${win.totalMembers} free)`
-      : `🟡 **${Math.round(win.overlapRatio * 100)}% Match** (${win.overlapCount}/${win.totalMembers} free)`;
+      ? `🟢 **100% Free** (${win.overlapCount}/${win.totalMembers})`
+      : `🟡 **${Math.round(win.overlapRatio * 100)}% Free** (${win.overlapCount}/${win.totalMembers})`;
 
     const hoursDuration = (win.durationMinutes / 60).toFixed(win.durationMinutes % 60 === 0 ? 0 : 1);
-    lines.push(`${medal} **${win.dayName}** (${hoursDuration} hrs) — ${matchTag}`);
-    lines.push(`   ⏰ Every **${win.dayName}**: <t:${startUnix}:t> – <t:${endUnix}:t>`);
-
-    if (win.memberBreakdowns && win.memberBreakdowns.length > 0) {
-      const breakdownStr = win.memberBreakdowns
-        .map((m) => `   • **${m.memberName}** (${m.timezone}): ${m.dayName} ${m.startTimeFormatted} – ${m.endTimeFormatted}`)
-        .join('\n');
-      lines.push(breakdownStr);
-    }
+    lines.push(`${medal} **${win.dayName} (${hoursDuration} hrs)** — ${matchTag}`);
+    lines.push(`   ⏰ <t:${startUnix}:t> – <t:${endUnix}:t>`);
     lines.push('');
   });
 
-  lines.push(`🔗 **Update or view the live schedule:** ${shareUrl}`);
+  lines.push(`🔗 **View full group schedule:** ${shareUrl}`);
 
   return lines.join('\n');
 }

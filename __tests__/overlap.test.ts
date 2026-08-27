@@ -38,8 +38,8 @@ describe('Overlap Engine', () => {
     expect(discordMsg).toContain('<t:');
     expect(discordMsg).toContain(':t>');
     expect(discordMsg).toContain('Saturday');
-    expect(discordMsg).toContain('Alex');
-    expect(discordMsg).toContain('Sean');
+    expect(discordMsg).not.toContain('Every');
+    expect(discordMsg).not.toContain('Alex');
   });
 
   it('generates a valid positive Unix timestamp in seconds for a slot', () => {
