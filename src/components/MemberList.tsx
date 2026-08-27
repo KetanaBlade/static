@@ -60,9 +60,9 @@ export const MemberList: React.FC<MemberListProps> = ({
   };
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs sm:text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+        <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
           <Users className="w-4 h-4 text-primary" />
           Group Members ({members.length})
         </span>
@@ -72,10 +72,10 @@ export const MemberList: React.FC<MemberListProps> = ({
           {isCreator ? (
             <span
               title={adminPin ? `Your Admin PIN is ${adminPin}` : 'You are the group creator'}
-              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5"
+              className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg inline-flex items-center gap-1.5"
             >
               <Crown className="w-3.5 h-3.5 text-amber-500" />
-              <span>Organizer Active {adminPin && <span className="font-mono text-[11px] text-muted-foreground">(PIN: {adminPin})</span>}</span>
+              <span>Organizer Active {adminPin && <span className="font-mono text-xs text-muted-foreground">(PIN: {adminPin})</span>}</span>
             </span>
           ) : (
             <button
@@ -85,9 +85,9 @@ export const MemberList: React.FC<MemberListProps> = ({
                 setPinError('');
                 setPinInput('');
               }}
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 py-1 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer"
+              className="text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 py-1 px-2.5 rounded-md hover:bg-muted transition-colors cursor-pointer"
             >
-              <Lock className="w-3 h-3 text-muted-foreground" />
+              <Lock className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Organizer Login</span>
             </button>
           )}
@@ -95,11 +95,11 @@ export const MemberList: React.FC<MemberListProps> = ({
       </div>
 
       {members.length === 0 ? (
-        <div className="text-sm text-muted-foreground italic p-4 rounded-xl border border-dashed text-center">
+        <div className="text-sm sm:text-base text-muted-foreground italic p-5 rounded-xl border border-dashed text-center">
           No members yet. Add your name and availability below to get started!
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5">
           {members.map((member, index) => {
             const isMe = member.id === currentMemberId;
             const isSelected = selectedMemberId === member.id;
@@ -110,7 +110,7 @@ export const MemberList: React.FC<MemberListProps> = ({
             return (
               <div
                 key={member.id}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border text-xs sm:text-sm transition-all shadow-xs ${
+                className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-xl border text-sm transition-all shadow-xs ${
                   isSelected
                     ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 font-semibold'
                     : 'border-border bg-card hover:border-primary/40 text-foreground'
@@ -121,9 +121,9 @@ export const MemberList: React.FC<MemberListProps> = ({
                   type="button"
                   onClick={() => onSelectMember(isSelected ? null : member.id)}
                   title={`Click to highlight ${member.name}'s schedule on the heatmap`}
-                  className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="w-5 h-5 rounded-full bg-primary/15 text-primary text-[11px] font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-semibold flex items-center justify-center">
                     {member.name.charAt(0).toUpperCase()}
                   </span>
                   <span>{member.name}</span>
@@ -135,7 +135,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                   )}
                 </button>
 
-                <span className="text-xs font-mono font-medium text-muted-foreground tabular-nums">
+                <span className="text-xs sm:text-sm font-mono font-medium text-muted-foreground tabular-nums">
                   {tzAbbr} • {totalHours}h
                 </span>
 
@@ -175,17 +175,17 @@ export const MemberList: React.FC<MemberListProps> = ({
         <DialogContent className="max-w-md">
           <form onSubmit={handlePinSubmit}>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+              <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
                 <KeyRound className="w-5 h-5 text-primary" />
                 Organizer PIN Login
               </DialogTitle>
-              <DialogDescription className="text-sm pt-1">
+              <DialogDescription className="text-sm text-muted-foreground pt-1">
                 Enter this group's 4-digit Admin PIN to unlock organizer controls (like removing members) on this device.
               </DialogDescription>
             </DialogHeader>
 
             <div className="py-4 space-y-3">
-              <label className="text-sm font-bold text-foreground block">
+              <label className="text-sm sm:text-base font-semibold text-foreground block">
                 4-Digit Admin PIN
               </label>
               <input
@@ -196,23 +196,23 @@ export const MemberList: React.FC<MemberListProps> = ({
                 placeholder="e.g. 8492"
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
-                className="w-full h-11 px-4 text-center font-mono tracking-widest text-lg font-bold rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs"
+                className="w-full h-11 px-4 text-center font-mono tracking-widest text-lg font-semibold rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs"
               />
               {pinError && (
-                <p className="text-xs font-semibold text-destructive">{pinError}</p>
+                <p className="text-sm font-semibold text-destructive">{pinError}</p>
               )}
               {pinSuccess && (
-                <p className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" /> Organizer access unlocked!
+                <p className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
+                  <Check className="w-4 h-4" /> Organizer access unlocked!
                 </p>
               )}
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">
-              <Button type="button" variant="outline" size="sm" onClick={() => setIsPinDialogOpen(false)}>
+              <Button type="button" variant="outline" size="sm" onClick={() => setIsPinDialogOpen(false)} className="font-semibold">
                 Cancel
               </Button>
-              <Button type="submit" size="sm" disabled={!pinInput.trim()}>
+              <Button type="submit" size="sm" disabled={!pinInput.trim()} className="font-semibold">
                 Unlock Controls
               </Button>
             </DialogFooter>
@@ -224,19 +224,19 @@ export const MemberList: React.FC<MemberListProps> = ({
       <Dialog open={!!memberToRemove} onOpenChange={(open) => !open && setMemberToRemove(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
+            <DialogTitle className="flex items-center gap-2 text-destructive font-semibold text-lg">
               <ShieldAlert className="w-5 h-5" />
               Remove Member?
             </DialogTitle>
-            <DialogDescription className="text-sm pt-2">
-              Are you sure you want to remove <strong>{memberToRemove?.name}</strong> from this group? Their weekly availability will be removed from the overlap heatmap.
+            <DialogDescription className="text-sm sm:text-base pt-2 text-muted-foreground">
+              Are you sure you want to remove <strong className="text-foreground font-semibold">{memberToRemove?.name}</strong> from this group? Their weekly availability will be removed from the overlap heatmap.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" size="sm" onClick={() => setMemberToRemove(null)}>
+            <Button variant="outline" size="sm" onClick={() => setMemberToRemove(null)} className="font-semibold">
               Cancel
             </Button>
-            <Button variant="destructive" size="sm" onClick={handleConfirmRemove}>
+            <Button variant="destructive" size="sm" onClick={handleConfirmRemove} className="font-semibold">
               Yes, Remove Member
             </Button>
           </DialogFooter>

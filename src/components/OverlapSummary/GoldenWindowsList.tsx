@@ -48,8 +48,8 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
           <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Clock className="w-6 h-6" />
           </div>
-          <h4 className="text-lg font-bold text-foreground">No Overlapping Windows Found</h4>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          <h4 className="text-lg font-semibold text-foreground">No Overlapping Windows Found</h4>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
             Try adjusting the attendance threshold (e.g. to 75%+) or minimum length above to see partial overlaps!
           </p>
         </CardContent>
@@ -61,15 +61,15 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
         <div>
-          <h3 className="text-xl sm:text-2xl font-extrabold flex items-center gap-2.5 text-foreground">
+          <h3 className="text-xl sm:text-2xl font-semibold flex items-center gap-2.5 text-foreground">
             <Trophy className="w-6 h-6 text-amber-500" />
             Top Matching Hangout Times
           </h3>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Times below are displayed in <strong className="text-foreground font-bold">{tzAbbr}</strong> ({viewerTimezone}).
+          <p className="text-sm sm:text-base text-muted-foreground mt-0.5">
+            Times below are displayed in <strong className="text-foreground font-semibold">{tzAbbr}</strong> ({viewerTimezone}).
           </p>
         </div>
-        <Badge variant="outline" className="text-xs sm:text-sm font-bold self-start sm:self-auto tabular-nums bg-background px-3 py-1">
+        <Badge variant="outline" className="text-sm font-semibold self-start sm:self-auto tabular-nums bg-background px-3 py-1">
           {filteredWindows.length} {filteredWindows.length === 1 ? 'window' : 'windows'} found
         </Badge>
       </div>
@@ -94,20 +94,20 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
               <div className="p-5 sm:p-6 pb-4 sm:pb-5 border-b border-border/60 flex flex-col md:flex-row md:items-center md:justify-between gap-3.5">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 text-primary font-extrabold text-sm uppercase tracking-wide">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 text-primary font-semibold text-sm uppercase tracking-wide">
                       <CalendarDays className="w-4 h-4" />
                       {win.dayName}
                     </span>
 
-                    <span className="text-xl sm:text-2xl font-black text-foreground tabular-nums tracking-tight">
+                    <span className="text-xl sm:text-2xl font-semibold text-foreground tabular-nums tracking-tight">
                       {win.startTimeFormatted} – {win.endTimeFormatted}
                     </span>
 
-                    <Badge variant="outline" className="text-xs sm:text-sm font-mono font-bold text-primary bg-primary/5 border-primary/30 px-2.5 py-0.5">
+                    <Badge variant="outline" className="text-sm font-mono font-semibold text-primary bg-primary/5 border-primary/30 px-2.5 py-0.5">
                       {tzAbbr}
                     </Badge>
 
-                    <Badge variant="secondary" className="text-xs sm:text-sm font-mono font-bold tabular-nums px-2.5 py-0.5">
+                    <Badge variant="secondary" className="text-sm font-mono font-semibold tabular-nums px-2.5 py-0.5">
                       {durationHours} {Number(durationHours) === 1 ? 'hr' : 'hrs'}
                     </Badge>
                   </div>
@@ -115,12 +115,12 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                   {/* Attendance badge */}
                   <div>
                     {isPerfect ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                         <Sparkles className="w-4 h-4 text-emerald-600" />
                         100% Match — Everyone Free! ({win.overlapCount}/{win.totalMembers})
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                         <Users className="w-4 h-4 text-amber-600" />
                         {Math.round(win.overlapRatio * 100)}% Match ({win.overlapCount} of {win.totalMembers} Free)
                       </span>
@@ -135,7 +135,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                     size="sm"
                     onClick={() => handleCopyDiscord(win)}
                     title="Copy formatted Discord timestamp (**Day:** <t:unix:t> – <t:unix:t>)"
-                    className="h-10 px-4 text-xs sm:text-sm font-bold border-border bg-background shadow-xs hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 cursor-pointer"
+                    className="h-10 px-4 text-sm font-semibold border-border bg-background shadow-xs hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 cursor-pointer"
                   >
                     {isDiscordCopied ? (
                       <>
@@ -155,7 +155,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                     size="sm"
                     onClick={() => handleCopyPlainText(win)}
                     title="Copy plain text summary"
-                    className="h-10 px-3 text-xs sm:text-sm text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-10 px-3 text-sm text-muted-foreground hover:text-foreground cursor-pointer font-medium"
                   >
                     {isTextCopied ? (
                       <Check className="w-4 h-4 text-emerald-600" />
@@ -168,7 +168,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
 
               {/* Multi-City Member Local Clocks Box */}
               <CardContent className="p-5 sm:p-6 pt-4 bg-muted/20">
-                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+                <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Local Time for Each Member:
                 </div>
 
@@ -176,17 +176,17 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                   {win.memberBreakdowns.map((member) => (
                     <div
                       key={member.memberId}
-                      className="p-3 rounded-xl bg-card border border-border/80 shadow-xs flex flex-col justify-between space-y-1.5"
+                      className="p-3.5 rounded-xl bg-card border border-border/80 shadow-xs flex flex-col justify-between space-y-1.5"
                     >
-                      <div className="text-sm font-bold text-foreground truncate">
+                      <div className="text-sm sm:text-base font-semibold text-foreground truncate">
                         {member.memberName}
                       </div>
-                      <div className="text-sm font-mono font-bold text-primary tabular-nums">
+                      <div className="text-sm sm:text-base font-mono font-semibold text-primary tabular-nums">
                         {member.startTimeFormatted} – {member.endTimeFormatted}
                       </div>
-                      <div className="text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                      <div className="text-xs sm:text-sm text-muted-foreground font-medium flex items-center justify-between">
                         <span>{member.dayName}</span>
-                        <span className="font-mono text-muted-foreground/90 font-bold">{member.timezone}</span>
+                        <span className="font-mono text-muted-foreground/90 font-semibold">{member.timezone}</span>
                       </div>
                     </div>
                   ))}

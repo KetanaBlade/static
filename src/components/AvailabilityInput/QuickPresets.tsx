@@ -35,7 +35,7 @@ export const QuickPresets: React.FC<QuickPresetsProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+        <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
           <Sparkles className="w-4 h-4 text-primary" />
           Quick 1-Tap Presets
         </span>
@@ -44,7 +44,7 @@ export const QuickPresets: React.FC<QuickPresetsProps> = ({
             variant="ghost"
             size="sm"
             onClick={handleClear}
-            className="text-xs sm:text-sm text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2.5 font-bold"
+            className="text-sm text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2.5 font-semibold cursor-pointer"
           >
             <Trash2 className="w-4 h-4 mr-1" />
             Clear All
@@ -59,10 +59,10 @@ export const QuickPresets: React.FC<QuickPresetsProps> = ({
             variant="outline"
             size="sm"
             onClick={() => handleApplyPreset(preset.id)}
-            className="h-10 text-xs sm:text-sm rounded-xl border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left font-bold shadow-xs px-3.5"
+            className="h-10 text-sm rounded-xl border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left font-semibold shadow-xs px-4 cursor-pointer"
             title={preset.description}
           >
-            <span className="text-primary font-black mr-1.5">+</span>
+            <span className="text-primary font-bold mr-1.5">+</span>
             {preset.label}
           </Button>
         ))}

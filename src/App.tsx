@@ -299,13 +299,13 @@ export const App: React.FC = () => {
       <main className="flex-1 container mx-auto max-w-5xl px-4 py-8 space-y-8">
         
         {/* Group Header & Member List Strip */}
-        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-7 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
                 {group.name}
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-base text-muted-foreground mt-1">
                 Find recurring weekly meeting windows where everyone's schedule overlaps.
               </p>
             </div>
@@ -340,11 +340,11 @@ export const App: React.FC = () => {
         {/* SECTION 2: RESULTS & GROUP OVERLAP */}
         <section aria-labelledby="section-results" className="space-y-6 pt-4 border-t border-border">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2.5">
               <Layers className="w-5 h-5 text-primary" />
               Group Overlap Results
             </h2>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-base text-muted-foreground mt-1">
               The optimal meeting windows where members' schedules align across timezones.
             </p>
           </div>
