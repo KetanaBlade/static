@@ -65,21 +65,21 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
   return (
     <div className="space-y-4">
       {/* Form Controls */}
-      <div className="rounded-xl border border-border bg-card/50 p-4 space-y-3">
-        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          <Clock className="w-3.5 h-3.5 text-primary" />
+      <div className="rounded-2xl border border-border bg-card p-5 space-y-4 shadow-xs">
+        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <Clock className="w-4 h-4 text-primary" />
           Add Custom Time Range
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           {/* Day selector */}
           <div>
-            <label className="text-[11px] font-medium text-muted-foreground block mb-1">Day of Week</label>
+            <label className="text-xs sm:text-sm font-bold text-foreground block mb-1.5">Day of Week</label>
             <select
               value={selectedDay}
               onChange={(e) => setSelectedDay(Number(e.target.value))}
               aria-label="Select day of week"
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer"
             >
               {DAYS_OF_WEEK.map((day) => (
                 <option key={day.index} value={day.index}>
@@ -91,7 +91,7 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
 
           {/* Start Time */}
           <div>
-            <label className="text-[11px] font-medium text-muted-foreground block mb-1">From</label>
+            <label className="text-xs sm:text-sm font-bold text-foreground block mb-1.5">From</label>
             <select
               value={startSlotInDay}
               onChange={(e) => {
@@ -102,7 +102,7 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
                 }
               }}
               aria-label="Select start time"
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 tabular-nums"
+              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 tabular-nums shadow-xs cursor-pointer"
             >
               {timeOptions.slice(0, 48).map((opt) => (
                 <option key={opt.slot} value={opt.slot}>
@@ -114,12 +114,12 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
 
           {/* End Time */}
           <div>
-            <label className="text-[11px] font-medium text-muted-foreground block mb-1">To</label>
+            <label className="text-xs sm:text-sm font-bold text-foreground block mb-1.5">To</label>
             <select
               value={endSlotInDay}
               onChange={(e) => setEndSlotInDay(Number(e.target.value))}
               aria-label="Select end time"
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 tabular-nums"
+              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 tabular-nums shadow-xs cursor-pointer"
             >
               {timeOptions.filter((opt) => opt.slot > startSlotInDay).map((opt) => (
                 <option key={opt.slot} value={opt.slot}>
@@ -132,7 +132,7 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
 
         <Button
           onClick={handleAddRange}
-          className="w-full sm:w-auto h-9 text-xs font-semibold mt-1"
+          className="w-full sm:w-auto h-10 px-5 text-sm font-bold mt-1 shadow-xs cursor-pointer"
           size="sm"
         >
           <Plus className="w-4 h-4 mr-1.5" />
@@ -142,11 +142,11 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
 
       {/* Active Range Chips */}
       {activeRanges.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground">
+        <div className="space-y-2.5">
+          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
             Your Active Windows ({activeRanges.length}):
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {activeRanges.map((range, idx) => {
               const dayName = DAYS_OF_WEEK[range.day]?.shortName || 'Day';
               const startSlot = (range.startHour * 2) + (range.startMinute >= 30 ? 1 : 0);
@@ -159,16 +159,16 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
                 <Badge
                   key={idx}
                   variant="secondary"
-                  className="pl-3 pr-1.5 py-1 text-xs font-medium flex items-center gap-1.5 bg-card border-border/80 shadow-sm"
+                  className="pl-3.5 pr-2 py-1.5 text-xs sm:text-sm font-semibold flex items-center gap-2 bg-card border-border shadow-xs"
                 >
-                  <span className="font-semibold text-foreground">{dayName}</span>
-                  <span className="tabular-nums text-muted-foreground">
+                  <span className="font-extrabold text-foreground">{dayName}</span>
+                  <span className="tabular-nums font-mono text-muted-foreground">
                     {startFormatted} – {endFormatted} ({durationHours}h)
                   </span>
                   <button
                     onClick={() => handleRemoveRange(range)}
                     aria-label={`Remove window for ${dayName} ${startFormatted} to ${endFormatted}`}
-                    className="ml-1 rounded-full p-0.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                    className="ml-1 rounded-full p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

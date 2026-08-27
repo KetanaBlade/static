@@ -49,56 +49,56 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = ({
       return 'bg-muted/10 opacity-30';
     }
 
-    if (count === 0 || ratio === 0) return 'bg-transparent hover:bg-muted/30';
+    if (count === 0 || ratio === 0) return 'bg-transparent hover:bg-muted/40';
     if (ratio === 1) return 'bg-emerald-500 text-white font-bold shadow-sm shadow-emerald-500/20';
-    if (ratio >= 0.75) return 'bg-emerald-600/70 text-emerald-100 font-semibold';
-    if (ratio >= 0.5) return 'bg-teal-600/50 text-teal-100';
-    return 'bg-teal-900/30 text-teal-300';
+    if (ratio >= 0.75) return 'bg-emerald-600/80 text-emerald-100 font-semibold';
+    if (ratio >= 0.5) return 'bg-teal-600/60 text-teal-100';
+    return 'bg-teal-900/40 text-teal-300';
   };
 
   return (
     <Card className="border-border bg-card shadow-sm">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <CardHeader className="p-5 sm:p-6 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
           <div>
-            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+            <CardTitle className="text-lg sm:text-xl font-extrabold flex items-center gap-2 text-foreground">
               <Layers className="w-5 h-5 text-primary" />
               Group Availability Heatmap
             </CardTitle>
-            <CardDescription className="text-xs">
+            <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
               Color intensity represents the percentage of group members free at that time (in your timezone).
             </CardDescription>
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground self-start sm:self-auto">
+          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground self-start sm:self-auto">
             <span>0%</span>
-            <div className="flex gap-0.5">
-              <div className="w-3.5 h-3.5 rounded-sm border border-border/80 bg-card" />
-              <div className="w-3.5 h-3.5 rounded-sm bg-teal-900/40" />
-              <div className="w-3.5 h-3.5 rounded-sm bg-teal-600/60" />
-              <div className="w-3.5 h-3.5 rounded-sm bg-emerald-600/80" />
-              <div className="w-3.5 h-3.5 rounded-sm bg-emerald-500 shadow-sm" />
+            <div className="flex gap-1">
+              <div className="w-4 h-4 rounded-sm border border-border/80 bg-card" />
+              <div className="w-4 h-4 rounded-sm bg-teal-900/40" />
+              <div className="w-4 h-4 rounded-sm bg-teal-600/60" />
+              <div className="w-4 h-4 rounded-sm bg-emerald-600/80" />
+              <div className="w-4 h-4 rounded-sm bg-emerald-500 shadow-xs" />
             </div>
             <span>100% Free</span>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="p-5 sm:p-6 pt-0">
         <TooltipProvider delayDuration={100}>
-          <div className="overflow-x-auto border border-border rounded-xl bg-card">
-            <div className="min-w-[640px]">
+          <div className="overflow-x-auto border border-border rounded-2xl bg-card shadow-xs">
+            <div className="min-w-[680px]">
               {/* Sticky Day Headers */}
-              <div className="grid grid-cols-[70px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-sm border-b border-border text-xs font-semibold">
-                <div className="p-2.5 text-center text-muted-foreground border-r border-border/60">
+              <div className="grid grid-cols-[80px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-md border-b border-border text-sm font-bold">
+                <div className="p-3 text-center text-muted-foreground border-r border-border/60">
                   Time
                 </div>
                 {DAYS_OF_WEEK.map((day) => (
                   <div
                     key={day.index}
-                    className={`p-2.5 text-center border-r border-border/60 last:border-r-0 ${
-                      day.isWeekend ? 'bg-primary/5 text-primary font-bold' : 'text-foreground'
+                    className={`p-3 text-center border-r border-border/60 last:border-r-0 ${
+                      day.isWeekend ? 'bg-primary/5 text-primary font-extrabold' : 'text-foreground'
                     }`}
                   >
                     <div>{day.shortName}</div>
@@ -114,9 +114,9 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = ({
                   const timeLabel = formatSlotTime(topSlotInDay, timeFormat);
 
                   return (
-                    <div key={hour} className="grid grid-cols-[70px_repeat(7,1fr)] group hover:bg-muted/10">
+                    <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] group hover:bg-muted/10">
                       {/* Time Column */}
-                      <div className="p-1.5 text-center text-[11px] text-muted-foreground font-mono tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
+                      <div className="p-2 text-center text-xs font-mono font-bold text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
                         {timeLabel}
                       </div>
 
@@ -153,22 +153,22 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = ({
                                   )}`}
                                 />
                               </TooltipTrigger>
-                              <TooltipContent side="top" className="p-2.5 max-w-xs space-y-1.5 text-xs">
-                                <div className="font-bold text-foreground">
+                              <TooltipContent side="top" className="p-3 max-w-xs space-y-2 text-xs sm:text-sm">
+                                <div className="font-extrabold text-foreground text-sm">
                                   {day.name} {formatSlotTime(topSlotInDay, timeFormat)}
                                 </div>
-                                <div className="text-[11px] font-semibold text-primary">
+                                <div className="text-xs font-bold text-primary">
                                   {topData.count} of {totalMembers} members available ({Math.round(topData.ratio * 100)}%)
                                 </div>
                                 {topData.availableMembers.length > 0 && (
-                                  <div className="text-[11px] text-emerald-400 flex items-start gap-1">
-                                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                  <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-start gap-1.5">
+                                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                                     <span>Available: {topData.availableMembers.map((m) => m.name).join(', ')}</span>
                                   </div>
                                 )}
                                 {topData.unavailableMembers.length > 0 && (
-                                  <div className="text-[11px] text-rose-400 flex items-start gap-1">
-                                    <XCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                  <div className="text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-start gap-1.5">
+                                    <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
                                     <span>Busy: {topData.unavailableMembers.map((m) => m.name).join(', ')}</span>
                                   </div>
                                 )}
@@ -186,22 +186,22 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = ({
                                   )}`}
                                 />
                               </TooltipTrigger>
-                              <TooltipContent side="top" className="p-2.5 max-w-xs space-y-1.5 text-xs">
-                                <div className="font-bold text-foreground">
+                              <TooltipContent side="top" className="p-3 max-w-xs space-y-2 text-xs sm:text-sm">
+                                <div className="font-extrabold text-foreground text-sm">
                                   {day.name} {formatSlotTime(bottomSlotInDay, timeFormat)}
                                 </div>
-                                <div className="text-[11px] font-semibold text-primary">
+                                <div className="text-xs font-bold text-primary">
                                   {bottomData.count} of {totalMembers} members available ({Math.round(bottomData.ratio * 100)}%)
                                 </div>
                                 {bottomData.availableMembers.length > 0 && (
-                                  <div className="text-[11px] text-emerald-400 flex items-start gap-1">
-                                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                  <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-start gap-1.5">
+                                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                                     <span>Available: {bottomData.availableMembers.map((m) => m.name).join(', ')}</span>
                                   </div>
                                 )}
                                 {bottomData.unavailableMembers.length > 0 && (
-                                  <div className="text-[11px] text-rose-400 flex items-start gap-1">
-                                    <XCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                  <div className="text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-start gap-1.5">
+                                    <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
                                     <span>Busy: {bottomData.unavailableMembers.map((m) => m.name).join(', ')}</span>
                                   </div>
                                 )}

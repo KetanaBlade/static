@@ -35,11 +35,7 @@ describe('Overlap Engine', () => {
     expect(windows.length).toBe(1);
 
     const discordMsg = generateWindowDiscordMessage(windows[0]);
-    expect(discordMsg).toContain('<t:');
-    expect(discordMsg).toContain(':t>');
-    expect(discordMsg).toContain('Saturday');
-    expect(discordMsg).not.toContain('Every');
-    expect(discordMsg).not.toContain('Alex');
+    expect(discordMsg).toMatch(/^\*\*Saturday:\*\* <t:\d+:t> – <t:\d+:t>$/);
   });
 
   it('generates a valid positive Unix timestamp in seconds for a slot', () => {

@@ -87,40 +87,40 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
 
   return (
     <div
-      className="space-y-3 select-none"
+      className="space-y-3.5 select-none"
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
       {/* Painter Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl border border-border bg-card/60">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-xl border border-border bg-card">
         <div className="flex items-center gap-2">
           <Button
             size="sm"
             variant={paintTool === 'paint' ? 'default' : 'outline'}
             onClick={() => setPaintTool('paint')}
-            className="h-8 text-xs font-semibold"
+            className="h-9 px-3.5 text-xs sm:text-sm font-bold cursor-pointer"
           >
-            <Paintbrush className="w-3.5 h-3.5 mr-1.5" />
+            <Paintbrush className="w-4 h-4 mr-1.5" />
             Paint Free Time
           </Button>
           <Button
             size="sm"
             variant={paintTool === 'erase' ? 'default' : 'outline'}
             onClick={() => setPaintTool('erase')}
-            className="h-8 text-xs font-semibold"
+            className="h-9 px-3.5 text-xs sm:text-sm font-bold cursor-pointer"
           >
-            <Eraser className="w-3.5 h-3.5 mr-1.5" />
+            <Eraser className="w-4 h-4 mr-1.5" />
             Erase
           </Button>
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
+        <div className="flex items-center gap-3.5 text-xs sm:text-sm text-muted-foreground font-semibold">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />
-            <strong className="text-foreground">{totalHoursSelected} hrs</strong> selected
+            <span className="w-3 h-3 rounded-full bg-primary inline-block shadow-xs" />
+            <strong className="text-foreground font-bold">{totalHoursSelected} hrs</strong> selected
           </span>
-          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-            <Info className="w-3 h-3" />
+          <span className="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <Info className="w-3.5 h-3.5" />
             Click & drag to paint hours
           </span>
         </div>
@@ -131,23 +131,23 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
         ref={gridContainerRef}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleMouseUp}
-        className="overflow-x-auto border border-border rounded-xl bg-card shadow-sm"
+        className="overflow-x-auto border border-border rounded-2xl bg-card shadow-xs"
       >
-        <div className="min-w-[640px]">
+        <div className="min-w-[680px]">
           {/* Day Headers (Sticky Top) */}
-          <div className="grid grid-cols-[70px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-sm border-b border-border text-xs font-semibold">
-            <div className="p-2.5 text-center text-muted-foreground border-r border-border/60">
+          <div className="grid grid-cols-[80px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-md border-b border-border text-sm font-bold">
+            <div className="p-3 text-center text-muted-foreground border-r border-border/60">
               Time
             </div>
             {DAYS_OF_WEEK.map((day) => (
               <div
                 key={day.index}
-                className={`p-2.5 text-center border-r border-border/60 last:border-r-0 ${
+                className={`p-3 text-center border-r border-border/60 last:border-r-0 ${
                   day.isWeekend ? 'bg-primary/5 text-primary' : 'text-foreground'
                 }`}
               >
-                <div className="font-bold">{day.shortName}</div>
-                <div className="text-[10px] font-normal text-muted-foreground">
+                <div className="font-extrabold text-sm">{day.shortName}</div>
+                <div className="text-[11px] font-semibold text-muted-foreground">
                   {day.isWeekend ? 'Weekend' : 'Weekday'}
                 </div>
               </div>
@@ -162,9 +162,9 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
               const timeLabel = formatSlotTime(topSlot, timeFormat);
 
               return (
-                <div key={hour} className="grid grid-cols-[70px_repeat(7,1fr)] group hover:bg-muted/10">
+                <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] group hover:bg-muted/10">
                   {/* Time label column (Sticky Left) */}
-                  <div className="p-1.5 text-center text-[11px] text-muted-foreground font-mono tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
+                  <div className="p-2 text-center text-xs font-mono font-bold text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
                     {timeLabel}
                   </div>
 

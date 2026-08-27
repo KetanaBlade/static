@@ -35,8 +35,8 @@ export const QuickPresets: React.FC<QuickPresetsProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-primary" />
+        <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <Sparkles className="w-4 h-4 text-primary" />
           Quick 1-Tap Presets
         </span>
         {currentSlots.length > 0 && (
@@ -44,25 +44,25 @@ export const QuickPresets: React.FC<QuickPresetsProps> = ({
             variant="ghost"
             size="sm"
             onClick={handleClear}
-            className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 h-7 px-2"
+            className="text-xs sm:text-sm text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2.5 font-bold"
           >
-            <Trash2 className="w-3.5 h-3.5 mr-1" />
+            <Trash2 className="w-4 h-4 mr-1" />
             Clear All
           </Button>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2.5">
         {QUICK_PRESETS.map((preset) => (
           <Button
             key={preset.id}
             variant="outline"
             size="sm"
             onClick={() => handleApplyPreset(preset.id)}
-            className="h-9 text-xs rounded-full border-border/80 hover:border-primary/50 hover:bg-primary/5 transition-all text-left font-medium"
+            className="h-10 text-xs sm:text-sm rounded-xl border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left font-bold shadow-xs px-3.5"
             title={preset.description}
           >
-            <span className="text-primary font-bold mr-1.5">+</span>
+            <span className="text-primary font-black mr-1.5">+</span>
             {preset.label}
           </Button>
         ))}

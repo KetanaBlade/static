@@ -38,8 +38,8 @@ export function getNextOccurrenceUnix(utcSlot: SlotIndex): number {
 }
 
 /**
- * Generates a clean, concise Discord message for an individual window using Discord's
- * dynamic Unix timestamp tags (<t:UNIX:t>) which automatically format in each reader's local clock.
+ * Generates a clean, minimal Discord timestamp message for an individual window:
+ * e.g. "**Saturday:** <t:1724785200:t> – <t:1724799600:t>"
  */
 export function generateWindowDiscordMessage(win: OverlappingWindow): string {
   const startUtcSlot = win.utcSlots[0];
@@ -48,14 +48,7 @@ export function generateWindowDiscordMessage(win: OverlappingWindow): string {
   const startUnix = getNextOccurrenceUnix(startUtcSlot);
   const endUnix = getNextOccurrenceUnix(endUtcSlot);
 
-  const durationHours = (win.durationMinutes / 60).toFixed(win.durationMinutes % 60 === 0 ? 0 : 1);
-  const matchEmoji = win.overlapRatio === 1 ? '🟢' : '🟡';
-  const matchText = win.overlapRatio === 1 ? '100% Free' : `${Math.round(win.overlapRatio * 100)}% Free`;
-
-  return [
-    `🎉 **${win.dayName} Hangout Window (${durationHours} hrs)** — ${matchEmoji} ${matchText}`,
-    `⏰ **${win.dayName}:** <t:${startUnix}:t> – <t:${endUnix}:t>`,
-  ].join('\n');
+  return `**${win.dayName}:** <t:${startUnix}:t> – <t:${endUnix}:t>`;
 }
 
 /**
@@ -77,23 +70,16 @@ export function generateDiscordSummary(
 
   const topWindows = windows.slice(0, 5);
 
-  topWindows.forEach((win, idx) => {
-    const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '✨';
+  topWindows.forEach((win) => {
     const startUtcSlot = win.utcSlots[0];
     const endUtcSlot = win.utcSlots[win.utcSlots.length - 1] + 1;
     const startUnix = getNextOccurrenceUnix(startUtcSlot);
     const endUnix = getNextOccurrenceUnix(endUtcSlot);
 
-    const matchTag = win.overlapRatio === 1
-      ? `🟢 **100% Free** (${win.overlapCount}/${win.totalMembers})`
-      : `🟡 **${Math.round(win.overlapRatio * 100)}% Free** (${win.overlapCount}/${win.totalMembers})`;
-
-    const hoursDuration = (win.durationMinutes / 60).toFixed(win.durationMinutes % 60 === 0 ? 0 : 1);
-    lines.push(`${medal} **${win.dayName} (${hoursDuration} hrs)** — ${matchTag}`);
-    lines.push(`   ⏰ <t:${startUnix}:t> – <t:${endUnix}:t>`);
-    lines.push('');
+    lines.push(`• **${win.dayName}:** <t:${startUnix}:t> – <t:${endUnix}:t>`);
   });
 
+  lines.push('');
   lines.push(`🔗 **View full group schedule:** ${shareUrl}`);
 
   return lines.join('\n');

@@ -37,24 +37,24 @@ export const MemberList: React.FC<MemberListProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5 text-primary" />
+        <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <Users className="w-4 h-4 text-primary" />
           Group Members ({members.length})
         </span>
         {isCreator && (
-          <Badge variant="secondary" className="text-[10px] font-mono text-primary flex items-center gap-1">
-            <Sparkles className="w-3 h-3" />
+          <Badge variant="secondary" className="text-xs font-mono text-primary font-bold flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5" />
             Group Creator
           </Badge>
         )}
       </div>
 
       {members.length === 0 ? (
-        <div className="text-xs text-muted-foreground italic p-3 rounded-lg border border-dashed text-center">
-          No members yet. Add your name and availability to get started!
+        <div className="text-sm text-muted-foreground italic p-4 rounded-xl border border-dashed text-center">
+          No members yet. Add your name and availability below to get started!
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5">
           {members.map((member) => {
             const isMe = member.id === currentMemberId;
             const isSelected = selectedMemberId === member.id;
@@ -64,10 +64,10 @@ export const MemberList: React.FC<MemberListProps> = ({
             return (
               <div
                 key={member.id}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-all shadow-sm ${
+                className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-xl border text-sm transition-all shadow-xs ${
                   isSelected
-                    ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/30'
-                    : 'border-border/80 bg-card hover:border-primary/40'
+                    ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/30 font-bold'
+                    : 'border-border bg-card hover:border-primary/40'
                 }`}
               >
                 {/* Clickable name to filter heatmap */}
@@ -75,16 +75,16 @@ export const MemberList: React.FC<MemberListProps> = ({
                   type="button"
                   onClick={() => onSelectMember(isSelected ? null : member.id)}
                   title={`Click to filter heatmap for ${member.name}'s schedule`}
-                  className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-[10px] font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-extrabold flex items-center justify-center">
                     {member.name.charAt(0).toUpperCase()}
                   </span>
                   {member.name}
-                  {isMe && <span className="text-[10px] text-muted-foreground font-normal">(You)</span>}
+                  {isMe && <span className="text-xs text-muted-foreground font-normal">(You)</span>}
                 </button>
 
-                <span className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                <span className="text-xs font-mono font-bold text-muted-foreground tabular-nums">
                   {tzAbbr} • {totalHours}h
                 </span>
 
@@ -95,9 +95,9 @@ export const MemberList: React.FC<MemberListProps> = ({
                     onClick={() => onEditMember(member)}
                     title="Edit my availability"
                     aria-label={`Edit availability for ${member.name}`}
-                    className="p-1 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                    className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                   >
-                    <Edit3 className="w-3 h-3" />
+                    <Edit3 className="w-3.5 h-3.5" />
                   </button>
                 )}
 
@@ -108,9 +108,9 @@ export const MemberList: React.FC<MemberListProps> = ({
                     onClick={() => setMemberToRemove(member)}
                     title={`Remove ${member.name} from group`}
                     aria-label={`Remove ${member.name} from group`}
-                    className="p-1 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                    className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                   >
-                    <UserX className="w-3 h-3" />
+                    <UserX className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
