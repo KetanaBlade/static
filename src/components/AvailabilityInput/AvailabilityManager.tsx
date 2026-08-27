@@ -101,13 +101,15 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="inline-flex rounded-xl border border-border bg-muted/60 p-1 self-start md:self-auto shrink-0 shadow-inner">
+          <div className="inline-flex rounded-xl border border-border bg-muted/60 p-1 self-start md:self-auto shrink-0 shadow-inner" role="tablist" aria-label="Input mode">
             <button
               type="button"
+              role="tab"
+              aria-selected={inputMode === 'grid'}
               onClick={() => setInputMode('grid')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
                 inputMode === 'grid'
-                  ? 'bg-foreground text-background shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -116,10 +118,12 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={inputMode === 'ranges'}
               onClick={() => setInputMode('ranges')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
                 inputMode === 'ranges'
-                  ? 'bg-foreground text-background shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >

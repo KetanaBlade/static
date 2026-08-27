@@ -20,7 +20,7 @@ interface HeaderProps {
   onNewGroup?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header: React.FC<HeaderProps> = React.memo(({
   groupName,
   timeFormat,
   onTimeFormatToggle,
@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNewGroup,
 }) => {
   return (
-    <header className="sticky top-0 z-30 border-b border-border/80 bg-card/90 backdrop-blur-md transition-all">
+    <header className="sticky top-0 z-30 border-b border-border/80 bg-card/90 backdrop-blur-md">
       <div className="container mx-auto max-w-5xl px-4 py-3.5 flex items-center justify-between gap-4">
         {/* Logo & Group Title */}
         <div
@@ -54,14 +54,15 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Global Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* High-Contrast Segmented 12h / 24h Toggle */}
-          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 shadow-inner">
+          {/* Segmented 12h / 24h Toggle in Accent Purple */}
+          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5" role="group" aria-label="Clock format selector">
             <button
               type="button"
+              aria-pressed={timeFormat === '12h'}
               onClick={() => timeFormat !== '12h' && onTimeFormatToggle()}
-              className={`px-3 py-1 text-xs font-bold rounded-md font-mono tabular-nums transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-colors cursor-pointer ${
                 timeFormat === '12h'
-                  ? 'bg-foreground text-background shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               title="12-hour AM/PM clock"
@@ -70,10 +71,11 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               type="button"
+              aria-pressed={timeFormat === '24h'}
               onClick={() => timeFormat !== '24h' && onTimeFormatToggle()}
-              className={`px-3 py-1 text-xs font-bold rounded-md font-mono tabular-nums transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-colors cursor-pointer ${
                 timeFormat === '24h'
-                  ? 'bg-foreground text-background shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               title="24-hour military clock"
@@ -82,32 +84,34 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* High-Contrast Segmented Light / Dark Mode Toggle */}
-          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 shadow-inner">
+          {/* Segmented Light / Dark Mode Toggle in Accent Purple */}
+          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5" role="group" aria-label="Theme selector">
             <button
               type="button"
+              aria-pressed={!isDarkMode}
               onClick={() => isDarkMode && onDarkModeToggle()}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                 !isDarkMode
-                  ? 'bg-foreground text-background shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Switch to Light Mode"
             >
-              <Sun className={`w-3.5 h-3.5 ${!isDarkMode ? 'text-amber-400' : ''}`} />
+              <Sun className={`w-3.5 h-3.5 ${!isDarkMode ? 'text-amber-300' : ''}`} />
               <span className="hidden sm:inline">Light</span>
             </button>
             <button
               type="button"
+              aria-pressed={isDarkMode}
               onClick={() => !isDarkMode && onDarkModeToggle()}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                 isDarkMode
-                  ? 'bg-foreground text-background shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Switch to Dark Mode"
             >
-              <Moon className={`w-3.5 h-3.5 ${isDarkMode ? 'text-indigo-300' : ''}`} />
+              <Moon className={`w-3.5 h-3.5 ${isDarkMode ? 'text-indigo-200' : ''}`} />
               <span className="hidden sm:inline">Dark</span>
             </button>
           </div>
@@ -151,4 +155,5 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
     </header>
   );
-};
+});
+Header.displayName = 'Header';

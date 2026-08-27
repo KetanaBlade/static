@@ -76,11 +76,12 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             <Filter className="w-3.5 h-3.5 text-primary" />
             Attendance:
           </span>
-          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 shadow-inner">
+          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 shadow-inner" role="group" aria-label="Attendance threshold">
             <button
               type="button"
+              aria-pressed={minRatio === 1.0}
               onClick={() => onMinRatioChange(1.0)}
-              className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors cursor-pointer ${
                 minRatio === 1.0
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -90,10 +91,11 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             </button>
             <button
               type="button"
+              aria-pressed={minRatio === 0.75}
               onClick={() => onMinRatioChange(0.75)}
-              className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors cursor-pointer ${
                 minRatio === 0.75
-                  ? 'bg-foreground text-background shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -101,10 +103,11 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             </button>
             <button
               type="button"
+              aria-pressed={minRatio === 0.5}
               onClick={() => onMinRatioChange(0.5)}
-              className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors cursor-pointer ${
                 minRatio === 0.5
-                  ? 'bg-foreground text-background shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >

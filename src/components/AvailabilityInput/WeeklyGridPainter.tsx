@@ -12,7 +12,7 @@ interface WeeklyGridPainterProps {
   timeFormat?: '12h' | '24h';
 }
 
-export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
+export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   timezone,
   currentSlots,
   onSlotsChange,
@@ -220,4 +220,5 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
       </div>
     </div>
   );
-};
+});
+WeeklyGridPainter.displayName = 'WeeklyGridPainter';
