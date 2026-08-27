@@ -20,7 +20,7 @@ import { ShareLinkModal } from './components/ShareExport/ShareLinkModal';
 import { DiscordExportModal } from './components/ShareExport/DiscordExportModal';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './components/ui/dialog';
-import { Sparkles, Plus, Layers } from 'lucide-react';
+import { Sparkles, Layers } from 'lucide-react';
 
 // Sample pre-populated group for instant demo if fresh visit
 const createSampleDemoGroup = (): Group => {
@@ -265,8 +265,6 @@ export const App: React.FC = () => {
       {/* Navigation Header */}
       <Header
         groupName={group.name}
-        viewerTimezone={viewerTimezone}
-        onTimezoneChange={setViewerTimezone}
         timeFormat={timeFormat}
         onTimeFormatToggle={() => setTimeFormat((prev) => (prev === '12h' ? '24h' : '12h'))}
         isDarkMode={isDarkMode}
@@ -283,23 +281,13 @@ export const App: React.FC = () => {
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 {group.name}
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                Find the windows during the week where everyone can meet across timezones.
+              <p className="text-sm text-muted-foreground mt-1">
+                Find recurring weekly meeting windows where everyone's schedule overlaps.
               </p>
             </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsNewGroupModalOpen(true)}
-              className="text-xs font-bold self-start sm:self-auto bg-background hover:bg-muted shadow-xs cursor-pointer"
-            >
-              <Plus className="w-4 h-4 mr-1 text-primary" />
-              New Group
-            </Button>
           </div>
 
           <MemberList
@@ -329,11 +317,11 @@ export const App: React.FC = () => {
         {/* SECTION 2: RESULTS & GROUP OVERLAP */}
         <section aria-labelledby="section-results" className="space-y-6 pt-4 border-t border-border">
           <div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
               <Layers className="w-5 h-5 text-primary" />
               Group Overlap Results
             </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               The optimal meeting windows where members' schedules align across timezones.
             </p>
           </div>

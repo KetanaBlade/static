@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { getTimezoneAbbreviation } from '../lib/timezone';
 import { GroupMember } from '../types';
-import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
-import { Users, UserX, Edit3, ShieldAlert, Sparkles } from 'lucide-react';
+import { Users, UserX, Edit3, ShieldAlert, Crown } from 'lucide-react';
 
 interface MemberListProps {
   members: GroupMember[];
@@ -35,18 +34,12 @@ export const MemberList: React.FC<MemberListProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+        <span className="text-xs sm:text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
           <Users className="w-4 h-4 text-primary" />
           Group Members ({members.length})
         </span>
-        {isCreator && (
-          <Badge variant="secondary" className="text-xs font-mono text-primary font-bold flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5" />
-            Group Creator
-          </Badge>
-        )}
       </div>
 
       {members.length === 0 ? (
@@ -54,37 +47,44 @@ export const MemberList: React.FC<MemberListProps> = ({
           No members yet. Add your name and availability below to get started!
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2.5">
-          {members.map((member) => {
+        <div className="flex flex-wrap gap-2">
+          {members.map((member, index) => {
             const isMe = member.id === currentMemberId;
             const isSelected = selectedMemberId === member.id;
             const tzAbbr = getTimezoneAbbreviation(member.timezone);
             const totalHours = (member.slotsUtc.length * 0.5).toFixed(1);
+            // The first member in the group or creator gets a subtle creator indicator
+            const isFirstOrCreator = index === 0;
 
             return (
               <div
                 key={member.id}
-                className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-xl border text-sm transition-all shadow-xs ${
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border text-xs sm:text-sm transition-all shadow-xs ${
                   isSelected
-                    ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/30 font-bold'
-                    : 'border-border bg-card hover:border-primary/40'
+                    ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 font-semibold'
+                    : 'border-border bg-card hover:border-primary/40 text-foreground'
                 }`}
               >
                 {/* Clickable name to filter heatmap */}
                 <button
                   type="button"
                   onClick={() => onSelectMember(isSelected ? null : member.id)}
-                  title={`Click to filter heatmap for ${member.name}'s schedule`}
-                  className="font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2 cursor-pointer"
+                  title={`Click to highlight ${member.name}'s schedule on the heatmap`}
+                  className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-extrabold flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-full bg-primary/15 text-primary text-[11px] font-bold flex items-center justify-center">
                     {member.name.charAt(0).toUpperCase()}
                   </span>
-                  {member.name}
+                  <span>{member.name}</span>
                   {isMe && <span className="text-xs text-muted-foreground font-normal">(You)</span>}
+                  {isFirstOrCreator && (
+                    <span title="Organizer / Creator" className="text-amber-500 inline-flex items-center">
+                      <Crown className="w-3.5 h-3.5" />
+                    </span>
+                  )}
                 </button>
 
-                <span className="text-xs font-mono font-bold text-muted-foreground tabular-nums">
+                <span className="text-xs font-mono font-medium text-muted-foreground tabular-nums">
                   {tzAbbr} • {totalHours}h
                 </span>
 
