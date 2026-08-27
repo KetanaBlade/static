@@ -43,10 +43,8 @@ export function getNextOccurrenceUnix(utcSlot: SlotIndex): number {
  */
 export function generateWindowDiscordMessage(win: OverlappingWindow): string {
   const startUtcSlot = win.utcSlots[0];
-  const endUtcSlot = win.utcSlots[win.utcSlots.length - 1] + 1; // exclusive
-
   const startUnix = getNextOccurrenceUnix(startUtcSlot);
-  const endUnix = getNextOccurrenceUnix(endUtcSlot);
+  const endUnix = startUnix + (win.durationMinutes * 60);
 
   return `**${win.dayName}:** <t:${startUnix}:t> – <t:${endUnix}:t>`;
 }
@@ -72,9 +70,8 @@ export function generateDiscordSummary(
 
   topWindows.forEach((win) => {
     const startUtcSlot = win.utcSlots[0];
-    const endUtcSlot = win.utcSlots[win.utcSlots.length - 1] + 1;
     const startUnix = getNextOccurrenceUnix(startUtcSlot);
-    const endUnix = getNextOccurrenceUnix(endUtcSlot);
+    const endUnix = startUnix + (win.durationMinutes * 60);
 
     lines.push(`• **${win.dayName}:** <t:${startUnix}:t> – <t:${endUnix}:t>`);
   });

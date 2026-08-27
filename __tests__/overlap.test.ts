@@ -72,4 +72,25 @@ describe('Overlap Engine', () => {
     expect(topWindow.overlapCount).toBe(2);
     expect(topWindow.unavailableMemberIds).toContain('3');
   });
+
+  it('unifies contiguous hours spanning across midnight into a single continuous window', () => {
+    // Member available Friday 5:00 PM to Saturday 2:00 AM (9 continuous hours)
+    const lateNightSlots = timeRangesToUtcSlots(
+      [
+        { day: 4, startHour: 17, startMinute: 0, endHour: 24, endMinute: 0 },
+        { day: 5, startHour: 0, startMinute: 0, endHour: 2, endMinute: 0 },
+      ],
+      'America/New_York'
+    );
+
+    const members: GroupMember[] = [
+      { id: '1', name: 'Gamer', timezone: 'America/New_York', slotsUtc: lateNightSlots, createdAt: '', updatedAt: '' },
+    ];
+
+    const windows = findOverlappingWindows(members, 'America/New_York', defaultSettings);
+    expect(windows.length).toBe(1);
+    expect(windows[0].durationMinutes).toBe(540); // 9 hours
+    expect(windows[0].startTimeFormatted).toBe('5:00 PM');
+    expect(windows[0].endTimeFormatted).toBe('2:00 AM (+1d)');
+  });
 });
