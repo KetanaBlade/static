@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DEFAULT_GROUP_SETTINGS } from './lib/constants';
 import { detectUserTimezone, timeRangesToUtcSlots } from './lib/timezone';
 import { findOverlappingWindows } from './lib/overlap';
-import { decodeGroupFromUrl, encodeGroupToUrl } from './lib/storage/urlStorage';
+import {
+  createGroup,
+  fetchGroup,
+  saveMemberAvailability,
+  removeMemberFromGroup,
+  subscribeToGroup,
+} from './lib/groupService';
 import {
   getSavedUserProfile,
   isGroupCreator,
@@ -21,7 +27,7 @@ import { ShareLinkModal } from './components/ShareExport/ShareLinkModal';
 import { DiscordExportModal } from './components/ShareExport/DiscordExportModal';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './components/ui/dialog';
-import { Sparkles, Layers, KeyRound } from 'lucide-react';
+import { Sparkles, Layers, KeyRound, Radio } from 'lucide-react';
 
 // Sample pre-populated group for instant demo if fresh visit
 const createSampleDemoGroup = (): Group => {
@@ -107,6 +113,7 @@ export const App: React.FC = () => {
   
   // Group state
   const [group, setGroup] = useState<Group | null>(null);
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState<boolean>(false);
   const [currentMemberId, setCurrentMemberId] = useState<string | null>(null);
   const [selectedFilterMemberId, setSelectedFilterMemberId] = useState<string | null>(null);
   const [editingMember, setEditingMember] = useState<GroupMember | undefined>(undefined);
@@ -124,40 +131,49 @@ export const App: React.FC = () => {
 
   // Force re-render on unlock
   const [, setAuthTick] = useState<number>(0);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  // Initial load from URL Hash or localStorage
+  // Load Group on Mount (from ?g=<groupId> or fallback demo)
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash.startsWith('#g=')) {
-      const encoded = hash.slice(3);
-      const decoded = decodeGroupFromUrl(encoded);
-      if (decoded) {
-        if (!decoded.adminPin) {
-          decoded.adminPin = '1234';
-        }
-        setGroup(decoded);
-        return;
-      }
-    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const groupId = urlParams.get('g');
 
-    // Default to sample demo squad
-    const initialGroup = createSampleDemoGroup();
-    setGroup(initialGroup);
-    
+    const init = async () => {
+      if (groupId) {
+        try {
+          const cloudGroup = await fetchGroup(groupId);
+          if (cloudGroup) {
+            setGroup(cloudGroup);
+            setIsRealtimeConnected(true);
+
+            // Subscribe to live WebSocket changes
+            if (unsubscribeRef.current) unsubscribeRef.current();
+            unsubscribeRef.current = subscribeToGroup(cloudGroup.id, (updated) => {
+              setGroup(updated);
+            });
+            return;
+          }
+        } catch (err) {
+          console.warn('Could not fetch cloud group, falling back to demo', err);
+        }
+      }
+
+      // Fallback demo squad
+      const initialGroup = createSampleDemoGroup();
+      setGroup(initialGroup);
+    };
+
+    init();
+
     const savedUser = getSavedUserProfile();
     if (savedUser) {
       setViewerTimezone(savedUser.timezone);
     }
-  }, []);
 
-  // Sync group changes to URL hash
-  const updateGroup = (updated: Group) => {
-    setGroup(updated);
-    const encoded = encodeGroupToUrl(updated);
-    if (encoded) {
-      window.history.replaceState(null, '', `#g=${encoded}`);
-    }
-  };
+    return () => {
+      if (unsubscribeRef.current) unsubscribeRef.current();
+    };
+  }, []);
 
   // Toggle Dark Mode
   const handleToggleDarkMode = () => {
@@ -171,7 +187,7 @@ export const App: React.FC = () => {
   };
 
   // Save / Add Member
-  const handleSaveMember = (name: string, timezone: string, slotsUtc: SlotIndex[]) => {
+  const handleSaveMember = async (name: string, timezone: string, slotsUtc: SlotIndex[]) => {
     if (!group) return;
 
     saveUserProfile({ name, timezone });
@@ -182,80 +198,95 @@ export const App: React.FC = () => {
       (m) => m.id === currentMemberId || m.name.toLowerCase() === name.toLowerCase()
     );
 
-    let updatedMembers = [...group.members];
-
-    if (existingIndex >= 0) {
-      const updatedMember: GroupMember = {
-        ...updatedMembers[existingIndex],
-        name,
-        timezone,
-        slotsUtc,
-        updatedAt: now,
-      };
-      updatedMembers[existingIndex] = updatedMember;
-      setCurrentMemberId(updatedMember.id);
-    } else {
-      const newMember: GroupMember = {
-        id: `member-${Date.now()}`,
-        name,
-        timezone,
-        slotsUtc,
-        createdAt: now,
-        updatedAt: now,
-      };
-      updatedMembers.push(newMember);
-      setCurrentMemberId(newMember.id);
-    }
-
-    updateGroup({
-      ...group,
-      members: updatedMembers,
+    const targetMemberId = existingIndex >= 0 ? group.members[existingIndex].id : `member-${Date.now()}`;
+    const targetMember: GroupMember = {
+      id: targetMemberId,
+      name,
+      timezone,
+      slotsUtc,
+      createdAt: existingIndex >= 0 ? group.members[existingIndex].createdAt : now,
       updatedAt: now,
-    });
+    };
+
+    setCurrentMemberId(targetMember.id);
     setEditingMember(undefined);
+
+    // Optimistically update local state immediately
+    const updatedMembers = [...group.members];
+    if (existingIndex >= 0) {
+      updatedMembers[existingIndex] = targetMember;
+    } else {
+      updatedMembers.push(targetMember);
+    }
+    const updatedGroup = { ...group, members: updatedMembers, updatedAt: now };
+    setGroup(updatedGroup);
+
+    // Sync to Supabase Cloud
+    if (group.id !== 'demo-squad') {
+      try {
+        const synced = await saveMemberAvailability(group.id, targetMember);
+        if (synced) setGroup(synced);
+      } catch (err) {
+        console.error('Failed to sync availability to cloud:', err);
+      }
+    }
   };
 
   // Remove Member
-  const handleRemoveMember = (memberId: string) => {
+  const handleRemoveMember = async (memberId: string) => {
     if (!group) return;
+
     const updatedMembers = group.members.filter((m) => m.id !== memberId);
     if (currentMemberId === memberId) {
       setCurrentMemberId(null);
       setEditingMember(undefined);
     }
-    updateGroup({
-      ...group,
-      members: updatedMembers,
-      updatedAt: new Date().toISOString(),
-    });
+    const updatedGroup = { ...group, members: updatedMembers, updatedAt: new Date().toISOString() };
+    setGroup(updatedGroup);
+
+    // Sync removal to Supabase Cloud
+    if (group.id !== 'demo-squad') {
+      try {
+        const synced = await removeMemberFromGroup(group.id, memberId);
+        if (synced) setGroup(synced);
+      } catch (err) {
+        console.error('Failed to remove member from cloud:', err);
+      }
+    }
   };
 
   // Create New Group
-  const handleCreateNewGroup = (e: React.FormEvent) => {
+  const handleCreateNewGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGroupNameInput.trim()) return;
 
-    const creatorToken = `token-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const pin = newGroupPinInput.trim() || Math.floor(1000 + Math.random() * 9000).toString();
 
-    const newGroup: Group = {
-      id: `group-${Date.now()}`,
-      name: newGroupNameInput.trim(),
-      creatorToken,
-      adminPin: pin,
-      settings: { ...DEFAULT_GROUP_SETTINGS },
-      members: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const newGroup = await createGroup(newGroupNameInput.trim(), pin);
+      saveCreatorToken(newGroup.id, newGroup.creatorToken || '');
+      setGroup(newGroup);
+      setIsRealtimeConnected(true);
 
-    saveCreatorToken(newGroup.id, creatorToken);
-    updateGroup(newGroup);
-    setCurrentMemberId(null);
-    setEditingMember(undefined);
-    setIsNewGroupModalOpen(false);
-    setNewGroupNameInput('');
-    setNewGroupPinInput(Math.floor(1000 + Math.random() * 9000).toString());
+      // Clean permanent URL
+      const newUrl = `${window.location.origin}${window.location.pathname}?g=${newGroup.id}`;
+      window.history.pushState(null, '', newUrl);
+
+      // Subscribe to real-time updates for this new group
+      if (unsubscribeRef.current) unsubscribeRef.current();
+      unsubscribeRef.current = subscribeToGroup(newGroup.id, (updated) => {
+        setGroup(updated);
+      });
+
+      setCurrentMemberId(null);
+      setEditingMember(undefined);
+      setIsNewGroupModalOpen(false);
+      setNewGroupNameInput('');
+      setNewGroupPinInput(Math.floor(1000 + Math.random() * 9000).toString());
+    } catch (err) {
+      console.error('Failed to create group in cloud:', err);
+      alert('Could not create group. Please verify database table setup.');
+    }
   };
 
   const handleUnlockWithPin = (enteredPin: string): boolean => {
@@ -280,7 +311,10 @@ export const App: React.FC = () => {
   const isCreator = group ? isGroupCreator(group.id, group.creatorToken) : false;
   const currentMember = group?.members.find((m) => m.id === currentMemberId) || editingMember;
 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+  // Clean Share URL: e.g. https://static.vercel.app/?g=8f2k-9x1a
+  const cleanShareUrl = group
+    ? `${window.location.origin}${window.location.pathname}?g=${group.id}`
+    : window.location.href;
 
   if (!group) return null;
 
@@ -305,9 +339,17 @@ export const App: React.FC = () => {
         <div className="rounded-2xl border border-border bg-card p-6 sm:p-7 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
-                {group.name}
-              </h1>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+                  {group.name}
+                </h1>
+                {isRealtimeConnected && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
+                    <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
+                    Live Cloud Sync
+                  </span>
+                )}
+              </div>
               <p className="text-base text-muted-foreground mt-1">
                 Find recurring weekly meeting windows where everyone's schedule overlaps.
               </p>
@@ -387,7 +429,7 @@ export const App: React.FC = () => {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         groupName={group.name}
-        shareUrl={currentUrl}
+        shareUrl={cleanShareUrl}
         adminPin={group.adminPin}
       />
 
@@ -396,7 +438,7 @@ export const App: React.FC = () => {
         onClose={() => setIsDiscordModalOpen(false)}
         groupName={group.name}
         windows={overlappingWindows}
-        shareUrl={currentUrl}
+        shareUrl={cleanShareUrl}
       />
 
       {/* Create New Group Modal */}
@@ -415,22 +457,22 @@ export const App: React.FC = () => {
 
             <div className="py-4 space-y-4">
               <div>
-                <label className="text-sm font-bold text-foreground block mb-1.5">
+                <label className="text-sm font-semibold text-foreground block mb-1.5">
                   Group Name <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   autoFocus
-                  placeholder="e.g. Weekend Hangouts"
+                  placeholder="e.g. Arcadion"
                   value={newGroupNameInput}
                   onChange={(e) => setNewGroupNameInput(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-bold text-foreground block mb-1.5 flex items-center gap-1.5">
+                <label className="text-sm font-semibold text-foreground block mb-1.5 flex items-center gap-1.5">
                   <KeyRound className="w-4 h-4 text-primary" />
                   Organizer 4-Digit Admin PIN
                 </label>
@@ -441,7 +483,7 @@ export const App: React.FC = () => {
                   placeholder="4-digit PIN"
                   value={newGroupPinInput}
                   onChange={(e) => setNewGroupPinInput(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-background font-mono text-sm font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-background font-mono text-sm font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Save this PIN to moderate members if you open the link on another device.
@@ -450,11 +492,11 @@ export const App: React.FC = () => {
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">
-              <Button type="button" variant="outline" size="sm" onClick={() => setIsNewGroupModalOpen(false)}>
+              <Button type="button" variant="outline" size="sm" onClick={() => setIsNewGroupModalOpen(false)} className="font-semibold">
                 Cancel
               </Button>
-              <Button type="submit" size="sm" disabled={!newGroupNameInput.trim() || !newGroupPinInput.trim()}>
-                Create Group
+              <Button type="submit" size="sm" disabled={!newGroupNameInput.trim() || !newGroupPinInput.trim()} className="font-semibold">
+                Create Live Group
               </Button>
             </DialogFooter>
           </form>
