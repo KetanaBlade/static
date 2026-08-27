@@ -17,6 +17,8 @@ import {
   saveRecentGroup,
   getRecentGroups,
   RecentGroupSummary,
+  saveMyMemberId,
+  getMyMemberId,
 } from './lib/storage/localStorage';
 import { Group, GroupMember, SlotIndex } from './types';
 import { Header } from './components/Header';
@@ -44,7 +46,17 @@ export const App: React.FC = () => {
     }
   });
   const [viewerTimezone, setViewerTimezone] = useState<string>(detectUserTimezone());
-  const [timeFormat, setTimeFormat] = useState<'12h' | '24h'>('12h');
+  
+  // Persistent 12H vs 24H clock format preference
+  const [timeFormat, setTimeFormat] = useState<'12h' | '24h'>(() => {
+    try {
+      const saved = localStorage.getItem('static_time_format');
+      if (saved === '12h' || saved === '24h') return saved;
+      return '12h';
+    } catch {
+      return '12h';
+    }
+  });
 
   // Sync dark mode class to document
   useEffect(() => {
@@ -60,6 +72,16 @@ export const App: React.FC = () => {
       console.error('Failed to save theme preference:', err);
     }
   }, [isDarkMode]);
+
+  const handleTimeFormatToggle = () => {
+    const next = timeFormat === '12h' ? '24h' : '12h';
+    setTimeFormat(next);
+    try {
+      localStorage.setItem('static_time_format', next);
+    } catch (err) {
+      console.error('Failed to save time format preference:', err);
+    }
+  };
   
   // Group state
   const [group, setGroup] = useState<Group | null>(null);
@@ -85,6 +107,23 @@ export const App: React.FC = () => {
   const [, setAuthTick] = useState<number>(0);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
+  // Helper to resolve the user's member ID in a loaded group
+  const resolveCurrentMember = (loadedGroup: Group) => {
+    const savedUser = getSavedUserProfile();
+    const storedMemberId = getMyMemberId(loadedGroup.id);
+
+    const matchingMember = loadedGroup.members.find(
+      (m) =>
+        m.id === storedMemberId ||
+        (savedUser?.name && m.name.toLowerCase() === savedUser.name.toLowerCase())
+    );
+
+    if (matchingMember) {
+      setCurrentMemberId(matchingMember.id);
+      saveMyMemberId(loadedGroup.id, matchingMember.id);
+    }
+  };
+
   // Load Group on Mount from ?g=<groupId>
   const loadGroupFromUrl = async () => {
     setIsLoadingGroup(true);
@@ -98,11 +137,13 @@ export const App: React.FC = () => {
           setGroup(cloudGroup);
           setIsRealtimeConnected(true);
           saveRecentGroup(cloudGroup.id, cloudGroup.name);
+          resolveCurrentMember(cloudGroup);
 
           // Subscribe to live WebSocket changes
           if (unsubscribeRef.current) unsubscribeRef.current();
           unsubscribeRef.current = subscribeToGroup(cloudGroup.id, (updated) => {
             setGroup(updated);
+            resolveCurrentMember(updated);
           });
           setIsLoadingGroup(false);
           return;
@@ -140,13 +181,7 @@ export const App: React.FC = () => {
 
   // Toggle Dark Mode
   const handleToggleDarkMode = () => {
-    const next = !isDarkMode;
-    setIsDarkMode(next);
-    if (next) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    setIsDarkMode((prev) => !prev);
   };
 
   // Save / Add Member
@@ -172,6 +207,7 @@ export const App: React.FC = () => {
     };
 
     setCurrentMemberId(targetMember.id);
+    saveMyMemberId(group.id, targetMember.id);
     setEditingMember(undefined);
 
     // Optimistically update local state immediately
@@ -187,7 +223,10 @@ export const App: React.FC = () => {
     // Sync to Supabase Cloud
     try {
       const synced = await saveMemberAvailability(group.id, targetMember);
-      if (synced) setGroup(synced);
+      if (synced) {
+        setGroup(synced);
+        resolveCurrentMember(synced);
+      }
     } catch (err) {
       console.error('Failed to sync availability to cloud:', err);
     }
@@ -236,6 +275,7 @@ export const App: React.FC = () => {
       if (unsubscribeRef.current) unsubscribeRef.current();
       unsubscribeRef.current = subscribeToGroup(newGroup.id, (updated) => {
         setGroup(updated);
+        resolveCurrentMember(updated);
       });
 
       setCurrentMemberId(null);
@@ -281,7 +321,7 @@ export const App: React.FC = () => {
       <Header
         groupName={group ? group.name : 'Hangout Scheduler'}
         timeFormat={timeFormat}
-        onTimeFormatToggle={() => setTimeFormat((prev) => (prev === '12h' ? '24h' : '12h'))}
+        onTimeFormatToggle={handleTimeFormatToggle}
         isDarkMode={isDarkMode}
         onDarkModeToggle={handleToggleDarkMode}
         onOpenShareModal={() => setIsShareModalOpen(true)}
@@ -297,7 +337,7 @@ export const App: React.FC = () => {
             <p className="text-sm font-semibold text-muted-foreground">Connecting to Live Group...</p>
           </div>
         ) : !group ? (
-          /* ================= ROOT LANDING SCREEN (NO MOCK DATA) ================= */
+          /* ================= ROOT LANDING SCREEN ================= */
           <div className="max-w-2xl mx-auto py-8 sm:py-16 space-y-8">
             {/* Hero */}
             <div className="text-center space-y-3">
@@ -389,7 +429,7 @@ export const App: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Groups List if any */}
+            {/* Recent Groups List */}
             {recentGroups.length > 0 && (
               <div className="space-y-2.5">
                 <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -445,6 +485,9 @@ export const App: React.FC = () => {
                 onEditMember={(m) => {
                   setEditingMember(m);
                   setCurrentMemberId(m.id);
+                  saveMyMemberId(group.id, m.id);
+                  // Smooth scroll up to editor
+                  window.scrollTo({ top: 180, behavior: 'smooth' });
                 }}
                 onRemoveMember={handleRemoveMember}
                 selectedMemberId={selectedFilterMemberId}

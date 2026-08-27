@@ -5,7 +5,6 @@ import {
   MessageSquare,
   Sun,
   Moon,
-  Clock,
   Sparkles,
   Plus,
 } from 'lucide-react';
@@ -55,17 +54,33 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Global Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* 12h / 24h Toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onTimeFormatToggle}
-            className="h-9 px-2.5 text-xs sm:text-sm font-mono tabular-nums font-semibold shadow-xs cursor-pointer"
-            title="Toggle 12h / 24h Time Format"
-          >
-            <Clock className="w-3.5 h-3.5 mr-1" />
-            {timeFormat.toUpperCase()}
-          </Button>
+          {/* Segmented 12h / 24h Time Format Toggle */}
+          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 shadow-xs">
+            <button
+              type="button"
+              onClick={() => timeFormat !== '12h' && onTimeFormatToggle()}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-all cursor-pointer ${
+                timeFormat === '12h'
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="12-hour AM/PM clock"
+            >
+              12H
+            </button>
+            <button
+              type="button"
+              onClick={() => timeFormat !== '24h' && onTimeFormatToggle()}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-all cursor-pointer ${
+                timeFormat === '24h'
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="24-hour military clock"
+            >
+              24H
+            </button>
+          </div>
 
           {/* Segmented Light / Dark Mode Toggle */}
           <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 shadow-xs">

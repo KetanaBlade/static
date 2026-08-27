@@ -4,6 +4,9 @@ const STORAGE_KEYS = {
   USER_PROFILE: 'static_user_profile',
   CREATOR_TOKENS: 'static_creator_tokens',
   RECENT_GROUPS: 'static_recent_groups',
+  GROUP_MEMBERS: 'static_group_members', // Map of groupId -> memberId
+  THEME: 'static_theme',
+  TIME_FORMAT: 'static_time_format',
 };
 
 export interface UserProfile {
@@ -93,5 +96,33 @@ export function getRecentGroups(): RecentGroupSummary[] {
     return JSON.parse(raw);
   } catch {
     return [];
+  }
+}
+
+/**
+ * Saves which member ID belongs to the current user in a specific group
+ */
+export function saveMyMemberId(groupId: string, memberId: string): void {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.GROUP_MEMBERS);
+    const map = raw ? JSON.parse(raw) : {};
+    map[groupId] = memberId;
+    localStorage.setItem(STORAGE_KEYS.GROUP_MEMBERS, JSON.stringify(map));
+  } catch (err) {
+    console.error('Failed to save group member id:', err);
+  }
+}
+
+/**
+ * Retrieves the member ID for the current user in a specific group
+ */
+export function getMyMemberId(groupId: string): string | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.GROUP_MEMBERS);
+    if (!raw) return null;
+    const map = JSON.parse(raw);
+    return map[groupId] || null;
+  } catch {
+    return null;
   }
 }
