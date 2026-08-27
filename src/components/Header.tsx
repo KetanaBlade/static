@@ -45,7 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <div className="text-[11px] font-semibold text-primary tracking-widest uppercase">
-              SyncSquad
+              Static
             </div>
             <div className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate max-w-[200px] sm:max-w-[320px]">
               {groupName}
