@@ -328,32 +328,31 @@ export const App: React.FC = () => {
 
         {/* SECTION 2: RESULTS & GROUP OVERLAP */}
         <section aria-labelledby="section-results" className="space-y-6 pt-4 border-t border-border">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
-                <Layers className="w-5 h-5 text-primary" />
-                Group Overlap Results
-              </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                The optimal meeting windows where members' schedules align.
-              </p>
-            </div>
-
-            {/* Filter & Threshold Bar */}
-            <div className="self-start md:self-auto">
-              <OverlapThresholdFilter
-                minRatio={minRatioFilter}
-                onMinRatioChange={setMinRatioFilter}
-                minDurationMinutes={minDurationMinutes}
-                onMinDurationChange={setMinDurationMinutes}
-              />
-            </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
+              <Layers className="w-5 h-5 text-primary" />
+              Group Overlap Results
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              The optimal meeting windows where members' schedules align across timezones.
+            </p>
           </div>
+
+          {/* Filter & Threshold Bar with Timezone Selector */}
+          <OverlapThresholdFilter
+            viewerTimezone={viewerTimezone}
+            onTimezoneChange={setViewerTimezone}
+            minRatio={minRatioFilter}
+            onMinRatioChange={setMinRatioFilter}
+            minDurationMinutes={minDurationMinutes}
+            onMinDurationChange={setMinDurationMinutes}
+          />
 
           {/* Ranked Best Hangout Times (Large, Scannable Cards) */}
           <GoldenWindowsList
             windows={overlappingWindows}
             groupName={group.name}
+            viewerTimezone={viewerTimezone}
             minRatioFilter={minRatioFilter}
           />
 

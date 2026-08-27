@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getTimezoneAbbreviation } from '../../lib/timezone';
 import { OverlappingWindow } from '../../types';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -9,14 +10,17 @@ import confetti from 'canvas-confetti';
 interface GoldenWindowsListProps {
   windows: OverlappingWindow[];
   groupName: string;
+  viewerTimezone: string;
   minRatioFilter?: number;
 }
 
 export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
   windows,
+  viewerTimezone,
   minRatioFilter = 0.5,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const tzAbbr = getTimezoneAbbreviation(viewerTimezone);
 
   React.useEffect(() => {
     const hasPerfectMatch = windows.some((w) => w.overlapRatio === 1);
@@ -54,9 +58,9 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
           <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Clock className="w-6 h-6" />
           </div>
-          <h4 className="text-base font-bold text-foreground">No Overlapping Windows Found Yet</h4>
+          <h4 className="text-base font-bold text-foreground">No Overlapping Windows Found</h4>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-            Once group members add their weekly free hours above, the best hangout windows across everyone's timezones will automatically appear here!
+            Try adjusting the attendance threshold (e.g. to 75%+) or minimum length above to see partial overlaps!
           </p>
         </CardContent>
       </Card>
@@ -72,7 +76,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
             Top Matching Hangout Times
           </h3>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Showing all recurring slots where your group overlaps, with everyone's local times.
+            Times below are displayed in <strong className="text-foreground">{tzAbbr}</strong> ({viewerTimezone}).
           </p>
         </div>
         <Badge variant="outline" className="text-xs font-semibold self-start sm:self-auto tabular-nums bg-background">
@@ -95,7 +99,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                   : 'border-border bg-card'
               }`}
             >
-              {/* Header Strip with Day, Times, and Match Status */}
+              {/* Header Strip with Day, Times, Timezone, and Match Status */}
               <div className="p-4 sm:p-5 pb-3 sm:pb-4 border-b border-border/60 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2.5">
@@ -107,6 +111,10 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                     <span className="text-lg sm:text-xl font-extrabold text-foreground tabular-nums tracking-tight">
                       {win.startTimeFormatted} – {win.endTimeFormatted}
                     </span>
+
+                    <Badge variant="outline" className="text-xs font-mono font-bold text-primary bg-primary/5 border-primary/20">
+                      {tzAbbr}
+                    </Badge>
 
                     <Badge variant="secondary" className="text-xs font-mono font-bold tabular-nums">
                       {durationHours} {Number(durationHours) === 1 ? 'hr' : 'hrs'}
@@ -133,7 +141,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopyWindow(win)}
-                  className="h-9 px-4 text-xs font-semibold self-start md:self-center shrink-0 border-border bg-background shadow-xs hover:bg-muted"
+                  className="h-9 px-4 text-xs font-semibold self-start md:self-center shrink-0 border-border bg-background shadow-xs hover:bg-muted cursor-pointer"
                 >
                   {isCopied ? (
                     <>
