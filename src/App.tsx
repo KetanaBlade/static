@@ -20,7 +20,7 @@ import { ShareLinkModal } from './components/ShareExport/ShareLinkModal';
 import { DiscordExportModal } from './components/ShareExport/DiscordExportModal';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './components/ui/dialog';
-import { Sparkles, Plus } from 'lucide-react';
+import { Sparkles, Plus, Layers } from 'lucide-react';
 
 // Sample pre-populated group for instant demo if fresh visit
 const createSampleDemoGroup = (): Group => {
@@ -98,8 +98,8 @@ const createSampleDemoGroup = (): Group => {
 };
 
 export const App: React.FC = () => {
-  // Theme & Viewer settings
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  // Theme & Viewer settings - Default to clean light mode
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [viewerTimezone, setViewerTimezone] = useState<string>(detectUserTimezone());
   const [timeFormat, setTimeFormat] = useState<'12h' | '24h'>('12h');
   
@@ -276,17 +276,18 @@ export const App: React.FC = () => {
         onNewGroup={() => setIsNewGroupModalOpen(true)}
       />
 
-      {/* Main Content Dashboard */}
-      <main className="flex-1 container mx-auto max-w-7xl px-4 py-6 space-y-6">
-        {/* Top Bar: Member Badges & Quick Stats */}
-        <div className="rounded-2xl border border-border bg-card/60 p-4 sm:p-5 shadow-sm space-y-4">
+      {/* Main Content Dashboard (Top-to-Bottom Scannable Flow) */}
+      <main className="flex-1 container mx-auto max-w-5xl px-4 py-8 space-y-8">
+        
+        {/* Group Header & Member List Strip */}
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
                 {group.name}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                Find the ideal weekly hangout windows where everyone overlaps, normalized across your timezones.
+                Find the windows during the week where everyone can meet across timezones.
               </p>
             </div>
 
@@ -294,10 +295,10 @@ export const App: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => setIsNewGroupModalOpen(true)}
-              className="text-xs font-semibold self-start sm:self-auto"
+              className="text-xs font-bold self-start sm:self-auto bg-background hover:bg-muted shadow-xs cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              New Group Schedule
+              <Plus className="w-4 h-4 mr-1 text-primary" />
+              New Group
             </Button>
           </div>
 
@@ -315,36 +316,49 @@ export const App: React.FC = () => {
           />
         </div>
 
-        {/* 2-Column Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Your Availability (Grid + Presets + Form) */}
-          <div className="lg:col-span-5 space-y-6">
-            <AvailabilityManager
-              key={currentMember?.id || 'new'}
-              currentMember={currentMember}
-              onSaveMember={handleSaveMember}
-              timeFormat={timeFormat}
-            />
+        {/* SECTION 1: TOP ENTRY (Your Weekly Availability) */}
+        <section aria-labelledby="section-availability">
+          <AvailabilityManager
+            key={currentMember?.id || 'new'}
+            currentMember={currentMember}
+            onSaveMember={handleSaveMember}
+            timeFormat={timeFormat}
+          />
+        </section>
+
+        {/* SECTION 2: BOTTOM SUMMARY (Best Hangout Overlaps & Heatmap) */}
+        <section aria-labelledby="section-results" className="space-y-6 pt-4 border-t border-border">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1.5">
+                <Layers className="w-4 h-4" />
+                Step 2 of 2
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-foreground">
+                Group Overlap Results
+              </h2>
+            </div>
+
+            {/* Filter & Threshold Bar */}
+            <div className="self-start md:self-auto">
+              <OverlapThresholdFilter
+                minRatio={minRatioFilter}
+                onMinRatioChange={setMinRatioFilter}
+                minDurationMinutes={minDurationMinutes}
+                onMinDurationChange={setMinDurationMinutes}
+              />
+            </div>
           </div>
 
-          {/* Right Column: Heatmap & Golden Windows Overlap */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Filter controls */}
-            <OverlapThresholdFilter
-              minRatio={minRatioFilter}
-              onMinRatioChange={setMinRatioFilter}
-              minDurationMinutes={minDurationMinutes}
-              onMinDurationChange={setMinDurationMinutes}
-            />
+          {/* Ranked Best Hangout Times (Large, Scannable Cards) */}
+          <GoldenWindowsList
+            windows={overlappingWindows}
+            groupName={group.name}
+            minRatioFilter={minRatioFilter}
+          />
 
-            {/* Ranked Golden Windows Breakdown */}
-            <GoldenWindowsList
-              windows={overlappingWindows}
-              groupName={group.name}
-              minRatioFilter={minRatioFilter}
-            />
-
-            {/* Interactive Group Heatmap */}
+          {/* Master Visual Heatmap */}
+          <div className="pt-4">
             <OverlapHeatmap
               members={group.members}
               viewerTimezone={viewerTimezone}
@@ -352,7 +366,7 @@ export const App: React.FC = () => {
               highlightedMemberId={selectedFilterMemberId}
             />
           </div>
-        </div>
+        </section>
       </main>
 
       {/* Modals */}
@@ -386,7 +400,7 @@ export const App: React.FC = () => {
             </DialogHeader>
 
             <div className="py-4">
-              <label className="text-xs font-semibold text-muted-foreground block mb-1.5">
+              <label className="text-xs font-bold text-foreground block mb-1.5">
                 Group Name
               </label>
               <input
@@ -396,7 +410,7 @@ export const App: React.FC = () => {
                 placeholder="e.g. Weekend Hangouts"
                 value={newGroupNameInput}
                 onChange={(e) => setNewGroupNameInput(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
 

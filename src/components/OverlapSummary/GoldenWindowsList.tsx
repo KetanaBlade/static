@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { OverlappingWindow } from '../../types';
-import { Card, CardContent, CardHeader } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Trophy, Clock, Users, Globe, Copy, Check, Sparkles } from 'lucide-react';
+import { Trophy, Clock, Users, Copy, Check, Sparkles, CalendarDays } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface GoldenWindowsListProps {
   windows: OverlappingWindow[];
   groupName: string;
-  minRatioFilter?: number; // 1.0 = 100%, 0.75 = 75%, 0.5 = 50%
+  minRatioFilter?: number;
 }
 
 export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
@@ -18,18 +18,17 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Trigger celebration confetti on 100% perfect match load
   React.useEffect(() => {
     const hasPerfectMatch = windows.some((w) => w.overlapRatio === 1);
     if (hasPerfectMatch) {
       try {
         confetti({
-          particleCount: 40,
+          particleCount: 35,
           spread: 60,
-          origin: { y: 0.7 },
+          origin: { y: 0.8 },
         });
       } catch {
-        // Safe fallback
+        // Fallback
       }
     }
   }, [windows]);
@@ -50,12 +49,14 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
 
   if (windows.length === 0) {
     return (
-      <Card className="border-dashed bg-card/40">
-        <CardContent className="py-10 text-center space-y-3">
-          <Clock className="w-10 h-10 text-muted-foreground/50 mx-auto" />
-          <h4 className="text-base font-semibold text-foreground">No Overlapping Windows Yet</h4>
+      <Card className="border-dashed bg-card/60">
+        <CardContent className="py-12 text-center space-y-3">
+          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+            <Clock className="w-6 h-6" />
+          </div>
+          <h4 className="text-base font-bold text-foreground">No Overlapping Windows Found Yet</h4>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-            Once group members add their weekly free hours, the best hangout windows across everyone's timezones will automatically calculate here!
+            Once group members add their weekly free hours above, the best hangout windows across everyone's timezones will automatically appear here!
           </p>
         </CardContent>
       </Card>
@@ -64,22 +65,22 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
         <div>
-          <h3 className="text-lg font-bold flex items-center gap-2">
+          <h3 className="text-lg sm:text-xl font-extrabold flex items-center gap-2 text-foreground">
             <Trophy className="w-5 h-5 text-amber-500" />
-            Best Hangout Windows
+            Top Matching Hangout Times
           </h3>
-          <p className="text-xs text-muted-foreground">
-            Ranked by attendance and duration across all members' local clocks.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Showing all recurring slots where your group overlaps, with everyone's local times.
           </p>
         </div>
-        <Badge variant="outline" className="text-xs font-semibold tabular-nums">
-          {filteredWindows.length} windows found
+        <Badge variant="outline" className="text-xs font-semibold self-start sm:self-auto tabular-nums bg-background">
+          {filteredWindows.length} {filteredWindows.length === 1 ? 'window' : 'windows'} found
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 gap-3.5">
+      <div className="grid grid-cols-1 gap-4">
         {filteredWindows.map((win) => {
           const isPerfect = win.overlapRatio === 1;
           const isCopied = copiedId === win.id;
@@ -88,86 +89,90 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
           return (
             <Card
               key={win.id}
-              className={`transition-all duration-200 ${
+              className={`overflow-hidden border transition-all shadow-sm ${
                 isPerfect
-                  ? 'border-emerald-500/40 bg-emerald-500/[0.04] shadow-md hover:border-emerald-500/60'
-                  : 'border-border/80 bg-card hover:border-primary/40'
+                  ? 'border-emerald-500/50 bg-emerald-500/[0.03] ring-1 ring-emerald-500/20'
+                  : 'border-border bg-card'
               }`}
             >
-              <CardHeader className="p-4 pb-2">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base font-bold text-foreground">
-                        {win.dayName}
-                      </span>
-                      <span className="text-sm font-semibold text-primary tabular-nums">
-                        {win.startTimeFormatted} – {win.endTimeFormatted}
-                      </span>
-                      <Badge variant="secondary" className="text-[11px] font-mono tabular-nums">
-                        {durationHours} hrs
-                      </Badge>
-                    </div>
+              {/* Header Strip with Day, Times, and Match Status */}
+              <div className="p-4 sm:p-5 pb-3 sm:pb-4 border-b border-border/60 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-primary/10 text-primary font-bold text-xs uppercase tracking-wide">
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      {win.dayName}
+                    </span>
 
-                    <div className="flex items-center gap-2">
-                      {isPerfect ? (
-                        <Badge variant="success" className="text-[11px] flex items-center gap-1">
-                          <Sparkles className="w-3 h-3" />
-                          100% Match (Everyone Free!)
-                        </Badge>
-                      ) : (
-                        <Badge variant="warning" className="text-[11px] flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {win.overlapCount} of {win.totalMembers} Free ({Math.round(win.overlapRatio * 100)}%)
-                        </Badge>
-                      )}
-                    </div>
+                    <span className="text-lg sm:text-xl font-extrabold text-foreground tabular-nums tracking-tight">
+                      {win.startTimeFormatted} – {win.endTimeFormatted}
+                    </span>
+
+                    <Badge variant="secondary" className="text-xs font-mono font-bold tabular-nums">
+                      {durationHours} {Number(durationHours) === 1 ? 'hr' : 'hrs'}
+                    </Badge>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCopyWindow(win)}
-                    className="h-8 text-xs font-medium"
-                  >
-                    {isCopied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 mr-1 text-emerald-500" />
-                        Copied!
-                      </>
+                  {/* Attendance badge */}
+                  <div>
+                    {isPerfect ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        100% Match — Everyone Free! ({win.overlapCount}/{win.totalMembers})
+                      </span>
                     ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5 mr-1" />
-                        Copy Time
-                      </>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                        <Users className="w-3.5 h-3.5" />
+                        {Math.round(win.overlapRatio * 100)}% Match ({win.overlapCount} of {win.totalMembers} Free)
+                      </span>
                     )}
-                  </Button>
+                  </div>
                 </div>
-              </CardHeader>
 
-              {/* Multi-City Timezone Breakdown */}
-              <CardContent className="p-4 pt-2">
-                <div className="rounded-lg bg-background/60 border border-border/60 p-2.5 space-y-1.5">
-                  <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1 uppercase tracking-wider">
-                    <Globe className="w-3 h-3 text-primary" />
-                    Local Times for Each Friend
-                  </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopyWindow(win)}
+                  className="h-9 px-4 text-xs font-semibold self-start md:self-center shrink-0 border-border bg-background shadow-xs hover:bg-muted"
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="w-4 h-4 mr-1.5 text-emerald-600" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-1.5" />
+                      Copy Time Breakdown
+                    </>
+                  )}
+                </Button>
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1">
-                    {win.memberBreakdowns.map((member) => (
-                      <div
-                        key={member.memberId}
-                        className="text-xs p-1.5 rounded-md bg-card/80 border border-border/40 flex items-center justify-between"
-                      >
-                        <span className="font-semibold text-foreground truncate max-w-[90px]">
-                          {member.memberName}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground font-mono tabular-nums">
-                          {member.dayName.slice(0, 3)} {member.startTimeFormatted} ({member.timezone})
-                        </span>
+              {/* Multi-City Member Local Clocks Box */}
+              <CardContent className="p-4 sm:p-5 pt-3 bg-muted/20">
+                <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2.5">
+                  Local Time for Each Member:
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                  {win.memberBreakdowns.map((member) => (
+                    <div
+                      key={member.memberId}
+                      className="p-2.5 rounded-lg bg-card border border-border/80 shadow-xs flex flex-col justify-between space-y-1"
+                    >
+                      <div className="text-xs font-bold text-foreground truncate">
+                        {member.memberName}
                       </div>
-                    ))}
-                  </div>
+                      <div className="text-xs font-mono font-semibold text-primary tabular-nums">
+                        {member.startTimeFormatted} – {member.endTimeFormatted}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground font-medium flex items-center justify-between">
+                        <span>{member.dayName}</span>
+                        <span className="font-mono text-muted-foreground/80">{member.timezone}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

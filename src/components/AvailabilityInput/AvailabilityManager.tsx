@@ -7,7 +7,7 @@ import { RangeBuilder } from './RangeBuilder';
 import { WeeklyGridPainter } from './WeeklyGridPainter';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Globe, User, Check, Calendar, ListPlus, Sparkles } from 'lucide-react';
+import { Globe, Check, Calendar, ListPlus, Sparkles, UserCheck } from 'lucide-react';
 
 interface AvailabilityManagerProps {
   currentMember?: GroupMember;
@@ -47,27 +47,30 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
   const tzAbbr = getTimezoneAbbreviation(timezone);
 
   return (
-    <Card className="border-primary/20 bg-card shadow-lg">
-      <CardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/60">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <User className="w-5 h-5 text-primary" />
-              {currentMember ? `Editing: ${currentMember.name}` : 'Your Weekly Free Time'}
+            <div className="text-xs font-bold uppercase tracking-wider text-primary mb-1 flex items-center gap-1.5">
+              <UserCheck className="w-4 h-4" />
+              Step 1 of 2
+            </div>
+            <CardTitle className="text-xl sm:text-2xl font-extrabold text-foreground">
+              {currentMember ? `Edit Availability for ${currentMember.name}` : 'Enter Your Weekly Availability'}
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm mt-1">
-              Select the general recurring days and hours when you are free to hang out.
+            <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Paint your free hours or tap a preset. Everything translates to your friends' timezones automatically.
             </CardDescription>
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-1 self-start sm:self-auto">
+          <div className="inline-flex rounded-xl border border-border bg-muted/50 p-1 self-start md:self-auto shrink-0">
             <button
               type="button"
               onClick={() => setInputMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 inputMode === 'grid'
-                  ? 'bg-card text-foreground shadow-sm'
+                  ? 'bg-card text-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -77,9 +80,9 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
             <button
               type="button"
               onClick={() => setInputMode('ranges')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 inputMode === 'ranges'
-                  ? 'bg-card text-foreground shadow-sm'
+                  ? 'bg-card text-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -89,10 +92,10 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
           </div>
         </div>
 
-        {/* User Identity & Timezone Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60">
+        {/* User Identity & Timezone Form Bar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground block mb-1">
+            <label className="text-xs font-bold text-foreground block mb-1">
               Your Name / Nickname <span className="text-destructive">*</span>
             </label>
             <input
@@ -101,19 +104,19 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
               placeholder="e.g. Alex"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-medium text-muted-foreground">
+              <label className="text-xs font-bold text-foreground">
                 Your Timezone
               </label>
               <button
                 type="button"
                 onClick={handleAutoDetectTimezone}
-                className="text-[11px] text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Globe className="w-3 h-3" />
                 Auto-detect
@@ -122,7 +125,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer"
             >
               <option value={timezone}>Current: {timezone} ({tzAbbr})</option>
               {POPULAR_TIMEZONES.map((group) => (
@@ -139,15 +142,15 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-5">
-        {/* Quick 1-Tap Presets Bar */}
+      <CardContent className="p-5 sm:p-6 space-y-6">
+        {/* Quick Presets */}
         <QuickPresets
           timezone={timezone}
           currentSlots={slotsUtc}
           onSlotsChange={setSlotsUtc}
         />
 
-        {/* Input Mode View */}
+        {/* Active Input Mode */}
         {inputMode === 'grid' ? (
           <WeeklyGridPainter
             timezone={timezone}
@@ -164,16 +167,16 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
           />
         )}
 
-        {/* Submit / Save Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border">
-          <div className="text-xs text-muted-foreground text-center sm:text-left">
+        {/* Save Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border/80">
+          <div className="text-xs sm:text-sm text-muted-foreground font-medium text-center sm:text-left">
             {slotsUtc.length > 0 ? (
-              <span className="text-emerald-500 font-semibold flex items-center gap-1.5">
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4" />
-                {(slotsUtc.length * 0.5).toFixed(1)} hours of availability ready to sync
+                {(slotsUtc.length * 0.5).toFixed(1)} hours of availability painted
               </span>
             ) : (
-              'Paint your hours above or tap a preset to get started'
+              'Paint your hours above or tap a 1-tap preset to choose when you are free'
             )}
           </div>
 
@@ -181,12 +184,12 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
             onClick={handleSave}
             disabled={!name.trim() || slotsUtc.length === 0}
             variant={isSaved ? 'success' : 'default'}
-            className="w-full sm:w-auto h-11 px-8 text-sm font-bold shadow-md"
+            className="w-full sm:w-auto h-11 px-8 text-sm font-bold shadow-md cursor-pointer"
           >
             {isSaved ? (
               <>
                 <Check className="w-4 h-4 mr-2" />
-                Saved & Synced!
+                Saved & Synced to Group!
               </>
             ) : (
               'Save My Availability'
