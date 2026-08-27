@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 
 interface HeaderProps {
-  groupName: string;
   timeFormat: '12h' | '24h';
   onTimeFormatToggle: () => void;
   isDarkMode: boolean;
@@ -18,10 +17,10 @@ interface HeaderProps {
   onOpenShareModal: () => void;
   onOpenDiscordModal: () => void;
   onNewGroup?: () => void;
+  onGoHome: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = React.memo(({
-  groupName,
   timeFormat,
   onTimeFormatToggle,
   isDarkMode,
@@ -29,38 +28,35 @@ export const Header: React.FC<HeaderProps> = React.memo(({
   onOpenShareModal,
   onOpenDiscordModal,
   onNewGroup,
+  onGoHome,
 }) => {
   return (
     <header className="sticky top-0 z-30 border-b border-border/80 bg-card/90 backdrop-blur-md">
-      <div className="container mx-auto max-w-5xl px-4 py-3.5 flex items-center justify-between gap-4">
-        {/* Logo & Group Title */}
-        <div
-          onClick={onNewGroup}
-          className="flex items-center gap-3 cursor-pointer group select-none"
-          title="Create or Switch Group"
+      <div className="container mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-4">
+        {/* Static Logo & Brand - Click to Go Home */}
+        <button
+          type="button"
+          onClick={onGoHome}
+          className="flex items-center gap-2.5 cursor-pointer group select-none text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl p-1 -m-1"
+          title="Static Home"
         >
-          <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
             <Sparkles className="w-4 h-4" />
           </div>
-          <div>
-            <div className="text-[11px] font-semibold text-primary tracking-widest uppercase">
-              Static
-            </div>
-            <div className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate max-w-[180px] sm:max-w-[280px]">
-              {groupName}
-            </div>
-          </div>
-        </div>
+          <span className="text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+            Static
+          </span>
+        </button>
 
         {/* Global Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Segmented 12h / 24h Toggle in Accent Purple */}
+          {/* Segmented 12h / 24h Toggle */}
           <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5" role="group" aria-label="Clock format selector">
             <button
               type="button"
               aria-pressed={timeFormat === '12h'}
               onClick={() => timeFormat !== '12h' && onTimeFormatToggle()}
-              className={`px-3 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-colors cursor-pointer ${
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-colors cursor-pointer ${
                 timeFormat === '12h'
                   ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -73,7 +69,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({
               type="button"
               aria-pressed={timeFormat === '24h'}
               onClick={() => timeFormat !== '24h' && onTimeFormatToggle()}
-              className={`px-3 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-colors cursor-pointer ${
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-colors cursor-pointer ${
                 timeFormat === '24h'
                   ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -84,13 +80,13 @@ export const Header: React.FC<HeaderProps> = React.memo(({
             </button>
           </div>
 
-          {/* Segmented Light / Dark Mode Toggle in Accent Purple */}
+          {/* Segmented Light / Dark Mode Toggle */}
           <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5" role="group" aria-label="Theme selector">
             <button
               type="button"
               aria-pressed={!isDarkMode}
               onClick={() => isDarkMode && onDarkModeToggle()}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                 !isDarkMode
                   ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -104,7 +100,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({
               type="button"
               aria-pressed={isDarkMode}
               onClick={() => !isDarkMode && onDarkModeToggle()}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                 isDarkMode
                   ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'

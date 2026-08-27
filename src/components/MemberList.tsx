@@ -3,7 +3,7 @@ import { getTimezoneAbbreviation } from '../lib/timezone';
 import { GroupMember } from '../types';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
-import { Users, UserX, Edit3, ShieldAlert, Crown, Lock, KeyRound, Check, Copy } from 'lucide-react';
+import { Users, UserX, Edit3, ShieldAlert, Crown, Lock, KeyRound, Check, Copy, User } from 'lucide-react';
 
 interface MemberListProps {
   members: GroupMember[];
@@ -116,17 +116,16 @@ export const MemberList: React.FC<MemberListProps> = ({
         </div>
       ) : (
         <div className="flex flex-wrap gap-2.5">
-          {members.map((member, index) => {
+          {members.map((member) => {
             const isMe = member.id === currentMemberId;
             const isSelected = selectedMemberId === member.id;
             const tzAbbr = getTimezoneAbbreviation(member.timezone);
             const totalHours = (member.slotsUtc.length * 0.5).toFixed(1);
-            const isFirstOrCreator = index === 0;
 
             return (
               <div
                 key={member.id}
-                className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-xl border text-sm transition-all shadow-xs ${
+                className={`inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-sm transition-all shadow-xs ${
                   isSelected
                     ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 font-semibold'
                     : 'border-border bg-card hover:border-primary/40 text-foreground'
@@ -143,10 +142,9 @@ export const MemberList: React.FC<MemberListProps> = ({
                     {member.name.charAt(0).toUpperCase()}
                   </span>
                   <span>{member.name}</span>
-                  {isMe && <span className="text-xs text-muted-foreground font-normal">(You)</span>}
-                  {isFirstOrCreator && (
-                    <span title="Organizer / Creator" className="text-amber-500 inline-flex items-center">
-                      <Crown className="w-3.5 h-3.5" />
+                  {isMe && (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded bg-primary/15 text-primary">
+                      <User className="w-3 h-3" /> You
                     </span>
                   )}
                 </button>

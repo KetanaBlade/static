@@ -308,6 +308,15 @@ export const App: React.FC = () => {
   const isCreator = group ? isGroupCreator(group.id, group.creatorToken) : false;
   const currentMember = group?.members.find((m) => m.id === currentMemberId) || editingMember;
 
+  const handleGoHome = () => {
+    if (unsubscribeRef.current) unsubscribeRef.current();
+    window.history.pushState(null, '', window.location.pathname);
+    setGroup(null);
+    setCurrentMemberId(null);
+    setEditingMember(undefined);
+    setRecentGroups(getRecentGroups());
+  };
+
   const cleanShareUrl = group
     ? `${window.location.origin}${window.location.pathname}?g=${group.id}`
     : window.location.href;
@@ -316,7 +325,6 @@ export const App: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20">
       {/* Navigation Header */}
       <Header
-        groupName={group ? group.name : 'Hangout Scheduler'}
         timeFormat={timeFormat}
         onTimeFormatToggle={handleTimeFormatToggle}
         isDarkMode={isDarkMode}
@@ -324,6 +332,7 @@ export const App: React.FC = () => {
         onOpenShareModal={() => setIsShareModalOpen(true)}
         onOpenDiscordModal={() => setIsDiscordModalOpen(true)}
         onNewGroup={() => setIsNewGroupModalOpen(true)}
+        onGoHome={handleGoHome}
       />
 
       {/* Main Content Dashboard */}

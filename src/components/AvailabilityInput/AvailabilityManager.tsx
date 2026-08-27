@@ -6,7 +6,19 @@ import { QuickPresets } from './QuickPresets';
 import { RangeBuilder } from './RangeBuilder';
 import { WeeklyGridPainter } from './WeeklyGridPainter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Globe, Check, Calendar, ListPlus, Sparkles, UserCheck, CircleDot, Cloud } from 'lucide-react';
+import {
+  Globe,
+  Check,
+  Calendar,
+  ListPlus,
+  Sparkles,
+  UserCheck,
+  CircleDot,
+  Cloud,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+} from 'lucide-react';
 
 interface AvailabilityManagerProps {
   currentMember?: GroupMember;
@@ -37,6 +49,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
   );
   const [inputMode, setInputMode] = useState<'grid' | 'ranges'>('grid');
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle' | 'needs_name'>('saved');
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   // Baseline of what has been successfully saved
   const lastSavedState = useRef<{ name: string; timezone: string; slotsUtc: SlotIndex[] }>({
@@ -47,6 +60,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
 
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMount = useRef<boolean>(true);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   // When switching member or loading member from outside
   useEffect(() => {
@@ -116,10 +130,10 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
       clearTimeout(saveTimerRef.current);
     }
 
-    // Auto-save after 500ms debounce
+    // Auto-save after 400ms debounce
     saveTimerRef.current = setTimeout(() => {
       performSave(name, timezone, slotsUtc);
-    }, 500);
+    }, 400);
 
     return () => {
       if (saveTimerRef.current) {
@@ -129,167 +143,248 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
   }, [name, timezone, slotsUtc, performSave]);
 
   const tzAbbr = getTimezoneAbbreviation(timezone);
+  const isNameEmpty = !name.trim();
 
   return (
-    <Card className="border-border bg-card shadow-sm">
+    <Card className="border-border bg-card shadow-sm transition-all">
       <CardHeader className="p-6 sm:p-7 pb-5 border-b border-border/60">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2.5">
-              <UserCheck className="w-6 h-6 text-primary" />
-              {currentMember ? `Edit Availability for ${currentMember.name}` : 'Your Weekly Availability'}
-            </CardTitle>
+            <div className="flex items-center gap-2.5">
+              <CardTitle className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2.5">
+                <UserCheck className="w-6 h-6 text-primary" />
+                {currentMember ? `Edit Availability for ${currentMember.name}` : 'Your Weekly Availability'}
+              </CardTitle>
+            </div>
             <CardDescription className="text-sm sm:text-base text-muted-foreground mt-1.5 leading-relaxed">
               Paint your free hours or tap a preset. Changes automatically save in real time.
             </CardDescription>
           </div>
 
-          {/* Mode Switcher Tabs */}
-          <div className="inline-flex rounded-xl border border-border bg-muted/60 p-1 self-start md:self-auto shrink-0 shadow-inner" role="tablist" aria-label="Input mode">
+          <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+            {/* Mode Switcher Tabs (Visible when expanded) */}
+            {!isCollapsed && (
+              <div className="inline-flex rounded-xl border border-border bg-muted/60 p-1 shadow-inner" role="tablist" aria-label="Input mode">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={inputMode === 'grid'}
+                  onClick={() => setInputMode('grid')}
+                  className={`flex items-center gap-2 px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
+                    inputMode === 'grid'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  Grid
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={inputMode === 'ranges'}
+                  onClick={() => setInputMode('ranges')}
+                  className={`flex items-center gap-2 px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
+                    inputMode === 'ranges'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <ListPlus className="w-3.5 h-3.5" />
+                  Form
+                </button>
+              </div>
+            )}
+
+            {/* Collapsible Toggle Button */}
             <button
               type="button"
-              role="tab"
-              aria-selected={inputMode === 'grid'}
-              onClick={() => setInputMode('grid')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
-                inputMode === 'grid'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-border bg-card hover:bg-muted text-foreground transition-colors cursor-pointer shadow-xs"
+              title={isCollapsed ? 'Expand Availability Editor' : 'Collapse Availability Editor'}
             >
-              <Calendar className="w-4 h-4" />
-              Interactive Grid
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={inputMode === 'ranges'}
-              onClick={() => setInputMode('ranges')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
-                inputMode === 'ranges'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <ListPlus className="w-4 h-4" />
-              Time Range Form
+              {isCollapsed ? (
+                <>
+                  <ChevronDown className="w-4 h-4 text-primary" />
+                  <span>Expand</span>
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  <span>Collapse</span>
+                </>
+              )}
             </button>
           </div>
         </div>
 
-        {/* User Identity & Timezone Form Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-5">
-          <div>
-            <label className="text-sm sm:text-base font-semibold text-foreground block mb-1.5">
-              Your Name / Nickname <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Alex"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm sm:text-base font-semibold text-foreground">
-                Your Timezone
-              </label>
-              <button
-                type="button"
-                onClick={handleAutoDetectTimezone}
-                className="text-xs sm:text-sm font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <Globe className="w-3.5 h-3.5" />
-                Auto-detect
-              </button>
+        {/* Collapsed summary pill */}
+        {isCollapsed && (
+          <div className="mt-4 p-3.5 rounded-xl bg-muted/40 border border-border/80 flex flex-wrap items-center justify-between gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground">{name || 'Unnamed member'}</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground">{timezone} ({tzAbbr})</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="font-semibold text-primary">{(slotsUtc.length * 0.5).toFixed(1)} hrs selected</span>
             </div>
-            <select
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer"
+            <button
+              type="button"
+              onClick={() => setIsCollapsed(false)}
+              className="text-xs font-semibold text-primary hover:underline cursor-pointer"
             >
-              <option value={timezone}>Current: {timezone} ({tzAbbr})</option>
-              {POPULAR_TIMEZONES.map((group) => (
-                <optgroup key={group.group} label={group.group}>
-                  {group.timezones.map((tz) => (
-                    <option key={tz.value} value={tz.value}>
-                      {tz.label}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+              Edit schedule →
+            </button>
           </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="p-6 sm:p-7 space-y-6">
-        {/* Quick Presets */}
-        <QuickPresets
-          timezone={timezone}
-          currentSlots={slotsUtc}
-          onSlotsChange={setSlotsUtc}
-        />
-
-        {/* Active Input Mode */}
-        {inputMode === 'grid' ? (
-          <WeeklyGridPainter
-            timezone={timezone}
-            currentSlots={slotsUtc}
-            onSlotsChange={setSlotsUtc}
-            timeFormat={timeFormat}
-          />
-        ) : (
-          <RangeBuilder
-            timezone={timezone}
-            currentSlots={slotsUtc}
-            onSlotsChange={setSlotsUtc}
-            timeFormat={timeFormat}
-          />
         )}
 
-        {/* Bottom Bar: Hours Count & Live Auto-Save Status */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 border-t border-border/80">
-          <div className="text-sm sm:text-base text-muted-foreground font-medium text-center sm:text-left">
-            {slotsUtc.length > 0 ? (
-              <span className="text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-600" />
-                {(slotsUtc.length * 0.5).toFixed(1)} hours of availability painted
-              </span>
-            ) : (
-              'Paint your hours above or tap a 1-tap preset to choose when you are free'
-            )}
+        {/* User Identity & Timezone Form Bar (Visible when expanded) */}
+        {!isCollapsed && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-5">
+            <div>
+              <label className="text-sm sm:text-base font-semibold text-foreground block mb-1.5">
+                Your Name / Nickname <span className="text-destructive">* (Required)</span>
+              </label>
+              <input
+                ref={nameInputRef}
+                type="text"
+                required
+                placeholder="Type your name to start..."
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={`w-full h-11 px-3.5 rounded-lg border text-sm sm:text-base font-medium focus:outline-none focus:ring-2 shadow-xs transition-colors ${
+                  isNameEmpty
+                    ? 'border-amber-500/80 bg-amber-500/[0.03] focus:ring-amber-500/40'
+                    : 'border-border bg-background focus:ring-primary/40'
+                }`}
+              />
+              {isNameEmpty && (
+                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" /> Please enter your name before selecting hours
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm sm:text-base font-semibold text-foreground">
+                  Your Timezone
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAutoDetectTimezone}
+                  className="text-xs sm:text-sm font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  Auto-detect
+                </button>
+              </div>
+              <select
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer"
+              >
+                <option value={timezone}>Current: {timezone} ({tzAbbr})</option>
+                {POPULAR_TIMEZONES.map((group) => (
+                  <optgroup key={group.group} label={group.group}>
+                    {group.timezones.map((tz) => (
+                      <option key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
           </div>
+        )}
+      </CardHeader>
 
-          {/* Live Auto-Save Status Badge */}
-          <div className="flex items-center gap-2">
-            {saveStatus === 'saving' && (
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/25 animate-pulse">
-                <CircleDot className="w-3.5 h-3.5 text-amber-600 animate-spin" />
-                Auto-saving changes...
-              </span>
-            )}
+      {!isCollapsed && (
+        <CardContent className="p-6 sm:p-7 space-y-6">
+          {/* If Name is missing, show an attention banner */}
+          {isNameEmpty ? (
+            <div
+              onClick={() => nameInputRef.current?.focus()}
+              className="p-6 rounded-2xl border-2 border-dashed border-amber-500/40 bg-amber-500/[0.04] text-center space-y-2 cursor-pointer transition-all hover:bg-amber-500/[0.07]"
+            >
+              <div className="w-10 h-10 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <h4 className="text-base font-semibold text-foreground">
+                Enter Your Name Above First
+              </h4>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                Type your name or nickname in the box above to unlock the availability grid and start painting your hours.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Quick Presets */}
+              <QuickPresets
+                timezone={timezone}
+                currentSlots={slotsUtc}
+                onSlotsChange={setSlotsUtc}
+              />
 
-            {saveStatus === 'saved' && (
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/25">
-                <Check className="w-4 h-4 text-emerald-600" />
-                Saved to group
-              </span>
-            )}
+              {/* Active Input Mode */}
+              {inputMode === 'grid' ? (
+                <WeeklyGridPainter
+                  timezone={timezone}
+                  currentSlots={slotsUtc}
+                  onSlotsChange={setSlotsUtc}
+                  timeFormat={timeFormat}
+                />
+              ) : (
+                <RangeBuilder
+                  timezone={timezone}
+                  currentSlots={slotsUtc}
+                  onSlotsChange={setSlotsUtc}
+                  timeFormat={timeFormat}
+                />
+              )}
 
-            {saveStatus === 'needs_name' && (
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-primary/10 text-primary border border-primary/25">
-                <Cloud className="w-3.5 h-3.5 text-primary" />
-                Type your name above to save
-              </span>
-            )}
-          </div>
-        </div>
-      </CardContent>
+              {/* Bottom Bar: Hours Count & Live Auto-Save Status */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 border-t border-border/80">
+                <div className="text-sm sm:text-base text-muted-foreground font-medium text-center sm:text-left">
+                  {slotsUtc.length > 0 ? (
+                    <span className="text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-600" />
+                      {(slotsUtc.length * 0.5).toFixed(1)} hours of availability painted
+                    </span>
+                  ) : (
+                    'Paint your hours above or tap a 1-tap preset to choose when you are free'
+                  )}
+                </div>
+
+                {/* Live Auto-Save Status Badge */}
+                <div className="flex items-center gap-2">
+                  {saveStatus === 'saving' && (
+                    <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/25 animate-pulse">
+                      <CircleDot className="w-3.5 h-3.5 text-amber-600 animate-spin" />
+                      Auto-saving changes...
+                    </span>
+                  )}
+
+                  {saveStatus === 'saved' && (
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/25">
+                      <Check className="w-4 h-4 text-emerald-600" />
+                      Saved to group
+                    </span>
+                  )}
+
+                  {saveStatus === 'needs_name' && (
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-primary/10 text-primary border border-primary/25">
+                      <Cloud className="w-3.5 h-3.5 text-primary" />
+                      Type your name above to save
+                    </span>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      )}
     </Card>
   );
 };
