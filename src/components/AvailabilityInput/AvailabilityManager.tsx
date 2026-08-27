@@ -51,12 +51,9 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
       <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/60">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-primary mb-1 flex items-center gap-1.5">
-              <UserCheck className="w-4 h-4" />
-              Step 1 of 2
-            </div>
-            <CardTitle className="text-xl sm:text-2xl font-extrabold text-foreground">
-              {currentMember ? `Edit Availability for ${currentMember.name}` : 'Enter Your Weekly Availability'}
+            <CardTitle className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-primary" />
+              {currentMember ? `Edit Availability for ${currentMember.name}` : 'Your Weekly Availability'}
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
               Paint your free hours or tap a preset. Everything translates to your friends' timezones automatically.

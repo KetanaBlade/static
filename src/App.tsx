@@ -109,9 +109,9 @@ export const App: React.FC = () => {
   const [selectedFilterMemberId, setSelectedFilterMemberId] = useState<string | null>(null);
   const [editingMember, setEditingMember] = useState<GroupMember | undefined>(undefined);
 
-  // Filters & Modals
-  const [minRatioFilter, setMinRatioFilter] = useState<number>(0.5);
-  const [minDurationMinutes, setMinDurationMinutes] = useState<number>(60);
+  // Filters & Modals - Default to 100% attendance & 2+ hours min length
+  const [minRatioFilter, setMinRatioFilter] = useState<number>(1.0);
+  const [minDurationMinutes, setMinDurationMinutes] = useState<number>(120);
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState<boolean>(false);
   const [isNewGroupModalOpen, setIsNewGroupModalOpen] = useState<boolean>(false);
@@ -326,17 +326,17 @@ export const App: React.FC = () => {
           />
         </section>
 
-        {/* SECTION 2: BOTTOM SUMMARY (Best Hangout Overlaps & Heatmap) */}
+        {/* SECTION 2: RESULTS & GROUP OVERLAP */}
         <section aria-labelledby="section-results" className="space-y-6 pt-4 border-t border-border">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1.5">
-                <Layers className="w-4 h-4" />
-                Step 2 of 2
-              </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-foreground">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
+                <Layers className="w-5 h-5 text-primary" />
                 Group Overlap Results
               </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                The optimal meeting windows where members' schedules align.
+              </p>
             </div>
 
             {/* Filter & Threshold Bar */}

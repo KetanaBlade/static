@@ -87,7 +87,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = ({
 
       <CardContent>
         <TooltipProvider delayDuration={100}>
-          <div className="overflow-x-auto border border-border rounded-xl bg-card max-h-[500px] overflow-y-auto">
+          <div className="overflow-x-auto border border-border rounded-xl bg-card">
             <div className="min-w-[640px]">
               {/* Sticky Day Headers */}
               <div className="grid grid-cols-[70px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-sm border-b border-border text-xs font-semibold">

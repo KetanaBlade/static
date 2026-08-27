@@ -126,12 +126,12 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
         </div>
       </div>
 
-      {/* 7-Day Interactive Grid */}
+      {/* 7-Day Interactive Grid (Full 24-Hour Day) */}
       <div
         ref={gridContainerRef}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleMouseUp}
-        className="overflow-x-auto border border-border rounded-xl bg-card shadow-sm max-h-[520px] overflow-y-auto"
+        className="overflow-x-auto border border-border rounded-xl bg-card shadow-sm"
       >
         <div className="min-w-[640px]">
           {/* Day Headers (Sticky Top) */}

@@ -58,7 +58,7 @@ export const POPULAR_TIMEZONES = [
 export const DEFAULT_GROUP_SETTINGS: GroupSettings = {
   timeFormat: '12h',
   weekStart: 'monday',
-  minDurationMinutes: 60, // 1 hour minimum overlap
+  minDurationMinutes: 120, // 2 hours minimum overlap default
 };
 
 export const QUICK_PRESETS: QuickPreset[] = [
