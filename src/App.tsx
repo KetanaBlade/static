@@ -351,29 +351,29 @@ export const App: React.FC = () => {
                 <Sparkles className="w-3.5 h-3.5" />
                 Zero-Friction Weekly Scheduling
               </div>
-              <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground">
                 Find the perfect hangout window across any timezone.
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                Zero logins, zero passwords. Create a group, paint your free hours, and share the live link with your friends.
+                Zero logins, zero passwords. Create a group, select your free hours, and share the live link with your friends.
               </p>
             </div>
 
             {/* Feature Highlights */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-              <div className="p-4 rounded-xl bg-card border border-border/80 shadow-xs space-y-1">
+              <div className="p-4 rounded-2xl bg-card/80 border border-border/80 backdrop-blur-sm shadow-xs space-y-1">
                 <Globe className="w-5 h-5 text-primary mx-auto" />
-                <div className="text-sm font-semibold text-foreground">Timezone Magic</div>
+                <div className="text-sm font-bold text-foreground">Timezone Magic</div>
                 <div className="text-xs text-muted-foreground">Seamless UTC conversions across US & Europe</div>
               </div>
-              <div className="p-4 rounded-xl bg-card border border-border/80 shadow-xs space-y-1">
+              <div className="p-4 rounded-2xl bg-card/80 border border-border/80 backdrop-blur-sm shadow-xs space-y-1">
                 <Users className="w-5 h-5 text-emerald-600 mx-auto" />
-                <div className="text-sm font-semibold text-foreground">Zero Sign-ups</div>
-                <div className="text-xs text-muted-foreground">Share the link and start painting instantly</div>
+                <div className="text-sm font-bold text-foreground">Zero Sign-ups</div>
+                <div className="text-xs text-muted-foreground">Share the link and start selecting times instantly</div>
               </div>
-              <div className="p-4 rounded-xl bg-card border border-border/80 shadow-xs space-y-1">
+              <div className="p-4 rounded-2xl bg-card/80 border border-border/80 backdrop-blur-sm shadow-xs space-y-1">
                 <Clock className="w-5 h-5 text-indigo-500 mx-auto" />
-                <div className="text-sm font-semibold text-foreground">Discord Ready</div>
+                <div className="text-sm font-bold text-foreground">Discord Ready</div>
                 <div className="text-xs text-muted-foreground">1-click dynamic Unix timestamp copy</div>
               </div>
             </div>

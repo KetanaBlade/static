@@ -2,8 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { DAYS_OF_WEEK, HOURS_PER_DAY, SLOTS_PER_HOUR } from '../../lib/constants';
 import { formatSlotTime, localToUtcSlot, utcToLocalSlot } from '../../lib/timezone';
 import { SlotIndex } from '../../types';
-import { Button } from '../ui/button';
-import { Eraser, Paintbrush, Info } from 'lucide-react';
+import { Sparkles, MousePointerClick } from 'lucide-react';
 
 interface WeeklyGridPainterProps {
   timezone: string;
@@ -19,8 +18,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   timeFormat = '12h',
 }) => {
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
-  const [drawMode, setDrawMode] = useState<'paint' | 'erase'>('paint');
-  const [paintTool, setPaintTool] = useState<'paint' | 'erase'>('paint');
+  const [drawMode, setDrawMode] = useState<'select' | 'erase'>('select');
   const gridContainerRef = useRef<HTMLDivElement>(null);
 
   // Set of active local slots for fast lookup: key = `${dayIndex}-${slotInDay}`
@@ -34,12 +32,12 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   }, [currentSlots, timezone]);
 
   const toggleSlot = useCallback(
-    (dayIndex: number, slotInDay: number, forceMode?: 'paint' | 'erase') => {
+    (dayIndex: number, slotInDay: number, forceMode?: 'select' | 'erase') => {
       const utcSlot = localToUtcSlot(dayIndex, slotInDay, timezone);
       const isAlreadyActive = currentSlots.includes(utcSlot);
-      const mode = forceMode || (isAlreadyActive ? 'erase' : 'paint');
+      const mode = forceMode || (isAlreadyActive ? 'erase' : 'select');
 
-      if (mode === 'paint' && !isAlreadyActive) {
+      if (mode === 'select' && !isAlreadyActive) {
         onSlotsChange([...currentSlots, utcSlot].sort((a, b) => a - b));
       } else if (mode === 'erase' && isAlreadyActive) {
         onSlotsChange(currentSlots.filter((s) => s !== utcSlot));
@@ -50,8 +48,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
 
   const handleMouseDown = (dayIndex: number, slotInDay: number) => {
     const key = `${dayIndex}-${slotInDay}`;
-    const willErase = paintTool === 'erase' || activeLocalSlots.has(key);
-    const mode = willErase ? 'erase' : 'paint';
+    const mode = activeLocalSlots.has(key) ? 'erase' : 'select';
     
     setIsDrawing(true);
     setDrawMode(mode);
@@ -87,42 +84,22 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
 
   return (
     <div
-      className="space-y-3.5 select-none"
+      className="space-y-3 select-none"
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {/* Painter Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-xl border border-border bg-card">
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant={paintTool === 'paint' ? 'default' : 'outline'}
-            onClick={() => setPaintTool('paint')}
-            className="h-9 px-3.5 text-xs sm:text-sm font-bold cursor-pointer"
-          >
-            <Paintbrush className="w-4 h-4 mr-1.5" />
-            Paint Free Time
-          </Button>
-          <Button
-            size="sm"
-            variant={paintTool === 'erase' ? 'default' : 'outline'}
-            onClick={() => setPaintTool('erase')}
-            className="h-9 px-3.5 text-xs sm:text-sm font-bold cursor-pointer"
-          >
-            <Eraser className="w-4 h-4 mr-1.5" />
-            Erase
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-3.5 text-xs sm:text-sm text-muted-foreground font-semibold">
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-primary inline-block shadow-xs" />
+      {/* Sleek Minimalist Status Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 rounded-xl border border-border bg-card/80 backdrop-blur-sm shadow-xs text-xs sm:text-sm">
+        <div className="flex items-center gap-2 font-semibold">
+          <Sparkles className="w-4 h-4 text-primary" />
+          <span>
             <strong className="text-foreground font-bold">{totalHoursSelected} hrs</strong> selected
           </span>
-          <span className="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <Info className="w-3.5 h-3.5" />
-            Click & drag to paint hours
-          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
+          <MousePointerClick className="w-3.5 h-3.5 text-primary" />
+          <span>Click or drag across the grid to toggle hours</span>
         </div>
       </div>
 
@@ -135,7 +112,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
       >
         <div className="min-w-[680px]">
           {/* Day Headers (Sticky Top) */}
-          <div className="grid grid-cols-[80px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-md border-b border-border text-sm font-bold">
+          <div className="grid grid-cols-[80px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-md border-b border-border text-sm font-semibold">
             <div className="p-3 text-center text-muted-foreground border-r border-border/60">
               Time
             </div>
@@ -146,8 +123,8 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                   day.isWeekend ? 'bg-primary/5 text-primary' : 'text-foreground'
                 }`}
               >
-                <div className="font-extrabold text-sm">{day.shortName}</div>
-                <div className="text-[11px] font-semibold text-muted-foreground">
+                <div className="font-bold text-sm tracking-tight">{day.shortName}</div>
+                <div className="text-[11px] font-medium text-muted-foreground">
                   {day.isWeekend ? 'Weekend' : 'Weekday'}
                 </div>
               </div>
@@ -163,12 +140,12 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
 
               return (
                 <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] group hover:bg-muted/10">
-                  {/* Time label column (Sticky Left) */}
-                  <div className="p-2 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
+                  {/* Time label column */}
+                  <div className="p-2 text-center text-xs sm:text-sm font-mono font-medium text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
                     {timeLabel}
                   </div>
 
-                  {/* 7 Days Columns for this hour (contains 2 30-minute slots) */}
+                  {/* 7 Days Columns for this hour */}
                   {DAYS_OF_WEEK.map((day) => {
                     const topKey = `${day.index}-${topSlot}`;
                     const bottomKey = `${day.index}-${bottomSlot}`;
@@ -192,7 +169,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                           className={`h-6 border-b border-border/20 cursor-pointer transition-colors ${
                             isTopActive
                               ? 'bg-primary text-primary-foreground font-semibold shadow-inner'
-                              : 'hover:bg-primary/15'
+                              : 'hover:bg-primary/20'
                           }`}
                         />
 
@@ -206,7 +183,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                           className={`h-6 cursor-pointer transition-colors ${
                             isBottomActive
                               ? 'bg-primary text-primary-foreground font-semibold shadow-inner'
-                              : 'hover:bg-primary/15'
+                              : 'hover:bg-primary/20'
                           }`}
                         />
                       </div>
