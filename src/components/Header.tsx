@@ -47,26 +47,14 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="text-[11px] font-semibold text-primary tracking-widest uppercase">
               Static
             </div>
-            <div className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate max-w-[200px] sm:max-w-[320px]">
+            <div className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate max-w-[180px] sm:max-w-[280px]">
               {groupName}
             </div>
           </div>
         </div>
 
         {/* Global Action Controls */}
-        <div className="flex items-center gap-2">
-          {/* New Group Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onNewGroup}
-            className="h-9 px-2.5 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hidden sm:inline-flex"
-            title="Start a new group schedule"
-          >
-            <Plus className="w-4 h-4 mr-1 text-primary" />
-            New Group
-          </Button>
-
+        <div className="flex flex-wrap items-center gap-2">
           {/* 12h / 24h Toggle */}
           <Button
             variant="outline"
@@ -79,16 +67,35 @@ export const Header: React.FC<HeaderProps> = ({
             {timeFormat.toUpperCase()}
           </Button>
 
-          {/* Dark / Light Mode Toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onDarkModeToggle}
-            className="h-9 w-9 p-0 shadow-xs cursor-pointer"
-            title="Toggle Theme"
-          >
-            {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
-          </Button>
+          {/* Segmented Light / Dark Mode Toggle */}
+          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 shadow-xs">
+            <button
+              type="button"
+              onClick={() => isDarkMode && onDarkModeToggle()}
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                !isDarkMode
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Switch to Light Mode"
+            >
+              <Sun className={`w-3.5 h-3.5 ${!isDarkMode ? 'text-amber-500' : ''}`} />
+              <span className="hidden sm:inline">Light</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => !isDarkMode && onDarkModeToggle()}
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                isDarkMode
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Switch to Dark Mode"
+            >
+              <Moon className={`w-3.5 h-3.5 ${isDarkMode ? 'text-indigo-400' : ''}`} />
+              <span className="hidden sm:inline">Dark</span>
+            </button>
+          </div>
 
           {/* Export to Discord CTA */}
           <Button
@@ -102,12 +109,25 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="sm:hidden">Discord</span>
           </Button>
 
-          {/* Share Group CTA */}
+          {/* New Group Button (Placed right next to Share) */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onNewGroup}
+            className="h-9 px-3 text-xs sm:text-sm font-semibold text-foreground hover:border-primary/50 shadow-xs cursor-pointer"
+            title="Start a new group schedule"
+          >
+            <Plus className="w-4 h-4 mr-1 text-primary" />
+            <span className="hidden sm:inline">New Group</span>
+            <span className="sm:hidden">New</span>
+          </Button>
+
+          {/* Share Group CTA (Primary) */}
           <Button
             variant="default"
             size="sm"
             onClick={onOpenShareModal}
-            className="h-9 px-3.5 text-xs sm:text-sm font-bold shadow-xs cursor-pointer"
+            className="h-9 px-3.5 text-xs sm:text-sm font-semibold shadow-xs cursor-pointer"
           >
             <Share2 className="w-4 h-4 mr-1.5" />
             Share

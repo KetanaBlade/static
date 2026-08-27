@@ -33,10 +33,33 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Sparkles, Layers, KeyRound, Radio, ArrowRight, Clock, Users, Globe, Plus } from 'lucide-react';
 
 export const App: React.FC = () => {
-  // Theme & Viewer settings - Default to clean light mode
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  // Theme & Viewer settings - Persistent theme preference
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('static_theme');
+      if (saved) return saved === 'dark';
+      return false; // Default to clean light mode
+    } catch {
+      return false;
+    }
+  });
   const [viewerTimezone, setViewerTimezone] = useState<string>(detectUserTimezone());
   const [timeFormat, setTimeFormat] = useState<'12h' | '24h'>('12h');
+
+  // Sync dark mode class to document
+  useEffect(() => {
+    try {
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('static_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('static_theme', 'light');
+      }
+    } catch (err) {
+      console.error('Failed to save theme preference:', err);
+    }
+  }, [isDarkMode]);
   
   // Group state
   const [group, setGroup] = useState<Group | null>(null);
