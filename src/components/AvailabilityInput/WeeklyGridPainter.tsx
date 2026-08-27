@@ -164,7 +164,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
               return (
                 <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] group hover:bg-muted/10">
                   {/* Time label column (Sticky Left) */}
-                  <div className="p-2 text-center text-xs font-mono font-bold text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
+                  <div className="p-2 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
                     {timeLabel}
                   </div>
 
@@ -189,7 +189,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
                           onMouseDown={() => handleMouseDown(day.index, topSlot)}
                           onMouseEnter={() => handleMouseEnter(day.index, topSlot)}
                           title={`${day.name} ${formatSlotTime(topSlot, timeFormat)}`}
-                          className={`h-5 border-b border-border/20 cursor-pointer transition-colors ${
+                          className={`h-6 border-b border-border/20 cursor-pointer transition-colors ${
                             isTopActive
                               ? 'bg-primary text-primary-foreground font-semibold shadow-inner'
                               : 'hover:bg-primary/15'
@@ -203,7 +203,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = ({
                           onMouseDown={() => handleMouseDown(day.index, bottomSlot)}
                           onMouseEnter={() => handleMouseEnter(day.index, bottomSlot)}
                           title={`${day.name} ${formatSlotTime(bottomSlot, timeFormat)}`}
-                          className={`h-5 cursor-pointer transition-colors ${
+                          className={`h-6 cursor-pointer transition-colors ${
                             isBottomActive
                               ? 'bg-primary text-primary-foreground font-semibold shadow-inner'
                               : 'hover:bg-primary/15'

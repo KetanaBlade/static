@@ -116,7 +116,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = ({
                   return (
                     <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] group hover:bg-muted/10">
                       {/* Time Column */}
-                      <div className="p-2 text-center text-xs font-mono font-bold text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
+                      <div className="p-2 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
                         {timeLabel}
                       </div>
 
@@ -146,7 +146,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = ({
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div
-                                  className={`h-5 border-b border-border/20 cursor-pointer transition-colors ${getCellColorClass(
+                                  className={`h-6 border-b border-border/20 cursor-pointer transition-colors ${getCellColorClass(
                                     topData.ratio,
                                     topData.count,
                                     isTopHighlightedAvailable
@@ -179,7 +179,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = ({
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div
-                                  className={`h-5 cursor-pointer transition-colors ${getCellColorClass(
+                                  className={`h-6 cursor-pointer transition-colors ${getCellColorClass(
                                     bottomData.ratio,
                                     bottomData.count,
                                     isBottomHighlightedAvailable
