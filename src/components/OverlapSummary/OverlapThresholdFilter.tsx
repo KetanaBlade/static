@@ -76,11 +76,11 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             <Filter className="w-3.5 h-3.5 text-primary" />
             Attendance:
           </span>
-          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 shadow-xs">
+          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 shadow-inner">
             <button
               type="button"
               onClick={() => onMinRatioChange(1.0)}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all cursor-pointer ${
                 minRatio === 1.0
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -91,9 +91,9 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             <button
               type="button"
               onClick={() => onMinRatioChange(0.75)}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all cursor-pointer ${
                 minRatio === 0.75
-                  ? 'bg-card text-foreground shadow-xs'
+                  ? 'bg-foreground text-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -102,9 +102,9 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             <button
               type="button"
               onClick={() => onMinRatioChange(0.5)}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all cursor-pointer ${
                 minRatio === 0.5
-                  ? 'bg-card text-foreground shadow-xs'
+                  ? 'bg-foreground text-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >

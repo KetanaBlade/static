@@ -54,14 +54,14 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Global Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Segmented 12h / 24h Time Format Toggle */}
-          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 shadow-xs">
+          {/* High-Contrast Segmented 12h / 24h Toggle */}
+          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 shadow-inner">
             <button
               type="button"
               onClick={() => timeFormat !== '12h' && onTimeFormatToggle()}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-bold rounded-md font-mono tabular-nums transition-all cursor-pointer ${
                 timeFormat === '12h'
-                  ? 'bg-card text-foreground shadow-xs'
+                  ? 'bg-foreground text-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               title="12-hour AM/PM clock"
@@ -71,9 +71,9 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => timeFormat !== '24h' && onTimeFormatToggle()}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-md font-mono tabular-nums transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-bold rounded-md font-mono tabular-nums transition-all cursor-pointer ${
                 timeFormat === '24h'
-                  ? 'bg-card text-foreground shadow-xs'
+                  ? 'bg-foreground text-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               title="24-hour military clock"
@@ -82,32 +82,32 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Segmented Light / Dark Mode Toggle */}
-          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 shadow-xs">
+          {/* High-Contrast Segmented Light / Dark Mode Toggle */}
+          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 shadow-inner">
             <button
               type="button"
               onClick={() => isDarkMode && onDarkModeToggle()}
-              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                 !isDarkMode
-                  ? 'bg-card text-foreground shadow-xs'
+                  ? 'bg-foreground text-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Switch to Light Mode"
             >
-              <Sun className={`w-3.5 h-3.5 ${!isDarkMode ? 'text-amber-500' : ''}`} />
+              <Sun className={`w-3.5 h-3.5 ${!isDarkMode ? 'text-amber-400' : ''}`} />
               <span className="hidden sm:inline">Light</span>
             </button>
             <button
               type="button"
               onClick={() => !isDarkMode && onDarkModeToggle()}
-              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                 isDarkMode
-                  ? 'bg-card text-foreground shadow-xs'
+                  ? 'bg-foreground text-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Switch to Dark Mode"
             >
-              <Moon className={`w-3.5 h-3.5 ${isDarkMode ? 'text-indigo-400' : ''}`} />
+              <Moon className={`w-3.5 h-3.5 ${isDarkMode ? 'text-indigo-300' : ''}`} />
               <span className="hidden sm:inline">Dark</span>
             </button>
           </div>
@@ -124,7 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="sm:hidden">Discord</span>
           </Button>
 
-          {/* New Group Button (Placed right next to Share) */}
+          {/* New Group Button */}
           <Button
             variant="outline"
             size="sm"

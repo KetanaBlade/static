@@ -101,13 +101,13 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="inline-flex rounded-xl border border-border bg-muted/50 p-1 self-start md:self-auto shrink-0">
+          <div className="inline-flex rounded-xl border border-border bg-muted/60 p-1 self-start md:self-auto shrink-0 shadow-inner">
             <button
               type="button"
               onClick={() => setInputMode('grid')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
                 inputMode === 'grid'
-                  ? 'bg-card text-foreground shadow-xs'
+                  ? 'bg-foreground text-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -117,9 +117,9 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
             <button
               type="button"
               onClick={() => setInputMode('ranges')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
                 inputMode === 'ranges'
-                  ? 'bg-card text-foreground shadow-xs'
+                  ? 'bg-foreground text-background shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
