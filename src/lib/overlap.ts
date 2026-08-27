@@ -1,7 +1,6 @@
 import {
   DAYS_OF_WEEK,
   SLOTS_PER_DAY,
-  SLOTS_PER_HOUR,
   TOTAL_SLOTS_PER_WEEK,
 } from './constants';
 import {
