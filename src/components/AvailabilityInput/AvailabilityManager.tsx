@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { POPULAR_TIMEZONES } from '../../lib/constants';
 import { detectUserTimezone, getTimezoneAbbreviation } from '../../lib/timezone';
 import { GroupMember, SlotIndex } from '../../types';
@@ -7,12 +7,21 @@ import { RangeBuilder } from './RangeBuilder';
 import { WeeklyGridPainter } from './WeeklyGridPainter';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Globe, Check, Calendar, ListPlus, Sparkles, UserCheck } from 'lucide-react';
+import { Globe, Check, Calendar, ListPlus, Sparkles, UserCheck, CircleDot } from 'lucide-react';
 
 interface AvailabilityManagerProps {
   currentMember?: GroupMember;
   onSaveMember: (name: string, timezone: string, slotsUtc: SlotIndex[]) => void;
   timeFormat?: '12h' | '24h';
+}
+
+function areSlotsEqual(a: SlotIndex[], b: SlotIndex[]): boolean {
+  if (a.length !== b.length) return false;
+  const setA = new Set(a);
+  for (const s of b) {
+    if (!setA.has(s)) return false;
+  }
+  return true;
 }
 
 export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
@@ -28,7 +37,33 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
     currentMember?.slotsUtc || []
   );
   const [inputMode, setInputMode] = useState<'grid' | 'ranges'>('grid');
-  const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [isRecentlySaved, setIsRecentlySaved] = useState<boolean>(false);
+
+  // Track the baseline saved state to know if user made changes
+  const lastSavedState = useRef<{ name: string; timezone: string; slotsUtc: SlotIndex[] }>({
+    name: currentMember?.name || '',
+    timezone: currentMember?.timezone || timezone,
+    slotsUtc: currentMember?.slotsUtc || [],
+  });
+
+  // When switching member or loading member
+  useEffect(() => {
+    if (currentMember) {
+      setName(currentMember.name);
+      setTimezone(currentMember.timezone);
+      setSlotsUtc(currentMember.slotsUtc);
+      lastSavedState.current = {
+        name: currentMember.name,
+        timezone: currentMember.timezone,
+        slotsUtc: currentMember.slotsUtc,
+      };
+    }
+  }, [currentMember]);
+
+  const isDirty =
+    name.trim() !== lastSavedState.current.name.trim() ||
+    timezone !== lastSavedState.current.timezone ||
+    !areSlotsEqual(slotsUtc, lastSavedState.current.slotsUtc);
 
   const handleAutoDetectTimezone = () => {
     const detected = detectUserTimezone();
@@ -40,8 +75,13 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
     if (!name.trim()) return;
 
     onSaveMember(name.trim(), timezone, slotsUtc);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
+    lastSavedState.current = {
+      name: name.trim(),
+      timezone,
+      slotsUtc: [...slotsUtc],
+    };
+    setIsRecentlySaved(true);
+    setTimeout(() => setIsRecentlySaved(false), 4000);
   };
 
   const tzAbbr = getTimezoneAbbreviation(timezone);
@@ -164,8 +204,8 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
           />
         )}
 
-        {/* Save Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border/80">
+        {/* Save Bar with Dynamic Status Indicator */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 border-t border-border/80">
           <div className="text-sm sm:text-base text-muted-foreground font-medium text-center sm:text-left">
             {slotsUtc.length > 0 ? (
               <span className="text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-2">
@@ -177,21 +217,48 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
             )}
           </div>
 
-          <Button
-            onClick={handleSave}
-            disabled={!name.trim() || slotsUtc.length === 0}
-            variant={isSaved ? 'success' : 'default'}
-            className="w-full sm:w-auto h-12 px-9 text-base font-semibold shadow-md cursor-pointer"
-          >
-            {isSaved ? (
-              <>
-                <Check className="w-5 h-5 mr-2" />
-                Saved & Synced to Group!
-              </>
-            ) : (
-              'Save My Availability'
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+            {/* Live Pending / Saved Status Pill */}
+            {isDirty && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/25 animate-fade-in">
+                <CircleDot className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                Changes Pending
+              </span>
             )}
-          </Button>
+
+            {!isDirty && isRecentlySaved && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/25 animate-fade-in">
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                Saved & Synced!
+              </span>
+            )}
+
+            {!isDirty && !isRecentlySaved && lastSavedState.current.slotsUtc.length > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 border border-border/60">
+                <Check className="w-3.5 h-3.5 text-muted-foreground" />
+                All Saved
+              </span>
+            )}
+
+            {/* Save Button */}
+            <Button
+              onClick={handleSave}
+              disabled={!name.trim() || slotsUtc.length === 0 || (!isDirty && !isRecentlySaved && lastSavedState.current.slotsUtc.length > 0)}
+              variant={isDirty ? 'default' : isRecentlySaved ? 'success' : 'outline'}
+              className="w-full sm:w-auto h-12 px-8 text-sm sm:text-base font-semibold shadow-md cursor-pointer transition-all"
+            >
+              {isRecentlySaved ? (
+                <>
+                  <Check className="w-5 h-5 mr-2 text-white" />
+                  Saved!
+                </>
+              ) : isDirty ? (
+                'Save My Availability'
+              ) : (
+                'Saved & Up to Date'
+              )}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
