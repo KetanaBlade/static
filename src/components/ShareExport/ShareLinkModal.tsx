@@ -8,6 +8,7 @@ interface ShareLinkModalProps {
   onClose: () => void;
   groupName: string;
   shareUrl: string;
+  adminPin?: string;
 }
 
 export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
@@ -15,8 +16,10 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
   onClose,
   groupName,
   shareUrl,
+  adminPin,
 }) => {
   const [isCopied, setIsCopied] = useState(false);
+  const [isPinCopied, setIsPinCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -24,41 +27,75 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
     setTimeout(() => setIsCopied(false), 3000);
   };
 
+  const handleCopyPin = () => {
+    if (!adminPin) return;
+    navigator.clipboard.writeText(adminPin);
+    setIsPinCopied(true);
+    setTimeout(() => setIsPinCopied(false), 2000);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
             <Share2 className="w-5 h-5 text-primary" />
             Share Group Link
           </DialogTitle>
-          <DialogDescription className="text-xs sm:text-sm">
+          <DialogDescription className="text-sm text-muted-foreground pt-1">
             Send this link to your friends in <strong>{groupName}</strong>.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              readOnly
-              value={shareUrl}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-muted/40 text-xs font-mono select-all focus:outline-none"
-            />
-            <Button onClick={handleCopy} size="sm" className="h-10 shrink-0 font-semibold">
-              {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            </Button>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              Member Invite Link
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={shareUrl}
+                className="w-full h-10 px-3 rounded-lg border border-border bg-muted/40 text-xs font-mono select-all focus:outline-none"
+              />
+              <Button onClick={handleCopy} size="sm" className="h-10 shrink-0 font-semibold">
+                {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
+            </div>
           </div>
 
-          <div className="rounded-xl bg-card border border-border/80 p-3 space-y-2 text-xs text-muted-foreground">
+          {adminPin && (
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                  Organizer Admin PIN
+                </div>
+                <div className="text-sm font-mono font-bold text-amber-900 dark:text-amber-100">
+                  {adminPin}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyPin}
+                className="h-8 text-xs font-semibold border-amber-500/30 hover:bg-amber-500/20"
+              >
+                {isPinCopied ? <Check className="w-3.5 h-3.5 mr-1 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                {isPinCopied ? 'Copied' : 'Copy PIN'}
+              </Button>
+            </div>
+          )}
+
+          <div className="rounded-xl bg-card border border-border/80 p-3.5 space-y-2 text-xs text-muted-foreground">
             <div className="font-semibold text-foreground flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               Zero-Friction for Friends:
             </div>
-            <ul className="space-y-1 pl-4 list-disc text-[11px]">
-              <li>No account or password needed.</li>
-              <li>Automatically detects their local timezone (e.g. Dublin, Los Angeles).</li>
-              <li>Their availability updates the group heatmap in real-time.</li>
+            <ul className="space-y-1.5 pl-4 list-disc text-xs text-muted-foreground">
+              <li>No account or password needed for friends to join.</li>
+              <li>Automatically detects their local timezone (e.g. Dublin, PST).</li>
+              <li>Their painted availability updates the group heatmap in real-time.</li>
             </ul>
           </div>
         </div>

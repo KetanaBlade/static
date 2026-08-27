@@ -3,7 +3,7 @@ import { getTimezoneAbbreviation } from '../lib/timezone';
 import { GroupMember } from '../types';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
-import { Users, UserX, Edit3, ShieldAlert, Crown, Lock, KeyRound, Check } from 'lucide-react';
+import { Users, UserX, Edit3, ShieldAlert, Crown, Lock, KeyRound, Check, Copy } from 'lucide-react';
 
 interface MemberListProps {
   members: GroupMember[];
@@ -33,6 +33,14 @@ export const MemberList: React.FC<MemberListProps> = ({
   const [pinInput, setPinInput] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
   const [pinSuccess, setPinSuccess] = useState<boolean>(false);
+  const [copiedPin, setCopiedPin] = useState<boolean>(false);
+
+  const handleCopyPin = () => {
+    if (!adminPin) return;
+    navigator.clipboard.writeText(adminPin);
+    setCopiedPin(true);
+    setTimeout(() => setCopiedPin(false), 2000);
+  };
 
   const handleConfirmRemove = () => {
     if (memberToRemove) {
@@ -70,13 +78,21 @@ export const MemberList: React.FC<MemberListProps> = ({
         {/* Organizer PIN Unlock or Creator Status */}
         <div>
           {isCreator ? (
-            <span
-              title={adminPin ? `Your Admin PIN is ${adminPin}` : 'You are the group creator'}
-              className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg inline-flex items-center gap-1.5"
-            >
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-semibold">
               <Crown className="w-3.5 h-3.5 text-amber-500" />
-              <span>Organizer Active {adminPin && <span className="font-mono text-xs text-muted-foreground">(PIN: {adminPin})</span>}</span>
-            </span>
+              <span>Organizer</span>
+              {adminPin && (
+                <button
+                  type="button"
+                  onClick={handleCopyPin}
+                  title="Click to copy Admin PIN"
+                  className="ml-1 px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-900 dark:text-emerald-100 font-mono text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <span>PIN: <strong className="font-bold">{adminPin}</strong></span>
+                  {copiedPin ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3 opacity-70" />}
+                </button>
+              )}
+            </div>
           ) : (
             <button
               type="button"

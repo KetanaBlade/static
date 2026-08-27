@@ -132,6 +132,9 @@ export const App: React.FC = () => {
       const encoded = hash.slice(3);
       const decoded = decodeGroupFromUrl(encoded);
       if (decoded) {
+        if (!decoded.adminPin) {
+          decoded.adminPin = '1234';
+        }
         setGroup(decoded);
         return;
       }
@@ -385,6 +388,7 @@ export const App: React.FC = () => {
         onClose={() => setIsShareModalOpen(false)}
         groupName={group.name}
         shareUrl={currentUrl}
+        adminPin={group.adminPin}
       />
 
       <DiscordExportModal

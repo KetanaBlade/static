@@ -55,7 +55,8 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.011em;
   }
   .tabular-nums {
     font-variant-numeric: tabular-nums;
