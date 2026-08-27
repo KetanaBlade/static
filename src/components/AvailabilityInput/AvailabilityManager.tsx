@@ -1,13 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { POPULAR_TIMEZONES } from '../../lib/constants';
 import { detectUserTimezone, getTimezoneAbbreviation } from '../../lib/timezone';
 import { GroupMember, SlotIndex } from '../../types';
 import { QuickPresets } from './QuickPresets';
 import { RangeBuilder } from './RangeBuilder';
 import { WeeklyGridPainter } from './WeeklyGridPainter';
-import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Globe, Check, Calendar, ListPlus, Sparkles, UserCheck, CircleDot } from 'lucide-react';
+import { Globe, Check, Calendar, ListPlus, Sparkles, UserCheck, CircleDot, Cloud } from 'lucide-react';
 
 interface AvailabilityManagerProps {
   currentMember?: GroupMember;
@@ -37,16 +36,19 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
     currentMember?.slotsUtc || []
   );
   const [inputMode, setInputMode] = useState<'grid' | 'ranges'>('grid');
-  const [isRecentlySaved, setIsRecentlySaved] = useState<boolean>(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle' | 'needs_name'>('saved');
 
-  // Track the baseline saved state to know if user made changes
+  // Baseline of what has been successfully saved
   const lastSavedState = useRef<{ name: string; timezone: string; slotsUtc: SlotIndex[] }>({
     name: currentMember?.name || '',
     timezone: currentMember?.timezone || timezone,
     slotsUtc: currentMember?.slotsUtc || [],
   });
 
-  // When switching member or loading member
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialMount = useRef<boolean>(true);
+
+  // When switching member or loading member from outside
   useEffect(() => {
     if (currentMember) {
       setName(currentMember.name);
@@ -57,32 +59,74 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
         timezone: currentMember.timezone,
         slotsUtc: currentMember.slotsUtc,
       };
+      setSaveStatus('saved');
     }
   }, [currentMember]);
-
-  const isDirty =
-    name.trim() !== lastSavedState.current.name.trim() ||
-    timezone !== lastSavedState.current.timezone ||
-    !areSlotsEqual(slotsUtc, lastSavedState.current.slotsUtc);
 
   const handleAutoDetectTimezone = () => {
     const detected = detectUserTimezone();
     setTimezone(detected);
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
+  // Perform the actual save
+  const performSave = useCallback(
+    (saveName: string, saveTz: string, saveSlots: SlotIndex[]) => {
+      if (!saveName.trim()) {
+        setSaveStatus('needs_name');
+        return;
+      }
 
-    onSaveMember(name.trim(), timezone, slotsUtc);
-    lastSavedState.current = {
-      name: name.trim(),
-      timezone,
-      slotsUtc: [...slotsUtc],
+      onSaveMember(saveName.trim(), saveTz, saveSlots);
+      lastSavedState.current = {
+        name: saveName.trim(),
+        timezone: saveTz,
+        slotsUtc: [...saveSlots],
+      };
+      setSaveStatus('saved');
+    },
+    [onSaveMember]
+  );
+
+  // Debounced Auto-Save trigger
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const trimmedName = name.trim();
+    const hasChanges =
+      trimmedName !== lastSavedState.current.name.trim() ||
+      timezone !== lastSavedState.current.timezone ||
+      !areSlotsEqual(slotsUtc, lastSavedState.current.slotsUtc);
+
+    if (!hasChanges) {
+      return;
+    }
+
+    if (!trimmedName) {
+      setSaveStatus('needs_name');
+      return;
+    }
+
+    // Indicate saving state immediately
+    setSaveStatus('saving');
+
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    // Auto-save after 500ms debounce
+    saveTimerRef.current = setTimeout(() => {
+      performSave(name, timezone, slotsUtc);
+    }, 500);
+
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
     };
-    setIsRecentlySaved(true);
-    setTimeout(() => setIsRecentlySaved(false), 4000);
-  };
+  }, [name, timezone, slotsUtc, performSave]);
 
   const tzAbbr = getTimezoneAbbreviation(timezone);
 
@@ -96,7 +140,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
               {currentMember ? `Edit Availability for ${currentMember.name}` : 'Your Weekly Availability'}
             </CardTitle>
             <CardDescription className="text-sm sm:text-base text-muted-foreground mt-1.5 leading-relaxed">
-              Paint your free hours or tap a preset. Everything translates to your friends' timezones automatically.
+              Paint your free hours or tap a preset. Changes automatically save in real time.
             </CardDescription>
           </div>
 
@@ -208,7 +252,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
           />
         )}
 
-        {/* Save Bar with Dynamic Status Indicator */}
+        {/* Bottom Bar: Hours Count & Live Auto-Save Status */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 border-t border-border/80">
           <div className="text-sm sm:text-base text-muted-foreground font-medium text-center sm:text-left">
             {slotsUtc.length > 0 ? (
@@ -221,47 +265,28 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-            {/* Live Pending / Saved Status Pill */}
-            {isDirty && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/25 animate-fade-in">
-                <CircleDot className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-                Changes Pending
+          {/* Live Auto-Save Status Badge */}
+          <div className="flex items-center gap-2">
+            {saveStatus === 'saving' && (
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/25 animate-pulse">
+                <CircleDot className="w-3.5 h-3.5 text-amber-600 animate-spin" />
+                Auto-saving changes...
               </span>
             )}
 
-            {!isDirty && isRecentlySaved && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/25 animate-fade-in">
-                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                Saved & Synced!
+            {saveStatus === 'saved' && (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/25">
+                <Check className="w-4 h-4 text-emerald-600" />
+                Saved to group
               </span>
             )}
 
-            {!isDirty && !isRecentlySaved && lastSavedState.current.slotsUtc.length > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 border border-border/60">
-                <Check className="w-3.5 h-3.5 text-muted-foreground" />
-                All Saved
+            {saveStatus === 'needs_name' && (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-primary/10 text-primary border border-primary/25">
+                <Cloud className="w-3.5 h-3.5 text-primary" />
+                Type your name above to save
               </span>
             )}
-
-            {/* Save Button */}
-            <Button
-              onClick={handleSave}
-              disabled={!name.trim() || slotsUtc.length === 0 || (!isDirty && !isRecentlySaved && lastSavedState.current.slotsUtc.length > 0)}
-              variant={isDirty ? 'default' : isRecentlySaved ? 'success' : 'outline'}
-              className="w-full sm:w-auto h-12 px-8 text-sm sm:text-base font-semibold shadow-md cursor-pointer transition-all"
-            >
-              {isRecentlySaved ? (
-                <>
-                  <Check className="w-5 h-5 mr-2 text-white" />
-                  Saved!
-                </>
-              ) : isDirty ? (
-                'Save My Availability'
-              ) : (
-                'Saved & Up to Date'
-              )}
-            </Button>
           </div>
         </div>
       </CardContent>
