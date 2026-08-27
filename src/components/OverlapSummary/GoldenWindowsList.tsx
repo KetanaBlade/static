@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { generateWindowDiscordMessage } from '../../lib/discord';
 import { getTimezoneAbbreviation } from '../../lib/timezone';
 import { OverlappingWindow } from '../../types';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Trophy, Clock, Users, Copy, Check, Sparkles, CalendarDays } from 'lucide-react';
+import { Trophy, Clock, Users, Copy, Check, Sparkles, CalendarDays, MessageSquare } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface GoldenWindowsListProps {
@@ -19,7 +20,8 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
   viewerTimezone,
   minRatioFilter = 0.5,
 }) => {
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedDiscordId, setCopiedDiscordId] = useState<string | null>(null);
+  const [copiedTextId, setCopiedTextId] = useState<string | null>(null);
   const tzAbbr = getTimezoneAbbreviation(viewerTimezone);
 
   React.useEffect(() => {
@@ -39,16 +41,23 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
 
   const filteredWindows = windows.filter((w) => w.overlapRatio >= minRatioFilter);
 
-  const handleCopyWindow = (win: OverlappingWindow) => {
+  const handleCopyDiscord = (win: OverlappingWindow) => {
+    const discordMessage = generateWindowDiscordMessage(win);
+    navigator.clipboard.writeText(discordMessage);
+    setCopiedDiscordId(win.id);
+    setTimeout(() => setCopiedDiscordId(null), 2500);
+  };
+
+  const handleCopyPlainText = (win: OverlappingWindow) => {
     const hours = (win.durationMinutes / 60).toFixed(win.durationMinutes % 60 === 0 ? 0 : 1);
     const breakdown = win.memberBreakdowns
       .map((m) => `• ${m.memberName} (${m.timezone}): ${m.dayName} ${m.startTimeFormatted} – ${m.endTimeFormatted}`)
       .join('\n');
-    const text = `🎉 **${win.dayName} Hangout Window (${hours} hrs)**\n${breakdown}`;
+    const text = `🎉 ${win.dayName} Hangout Window (${hours} hrs — ${win.startTimeFormatted} to ${win.endTimeFormatted} ${tzAbbr})\n${breakdown}`;
 
     navigator.clipboard.writeText(text);
-    setCopiedId(win.id);
-    setTimeout(() => setCopiedId(null), 2500);
+    setCopiedTextId(win.id);
+    setTimeout(() => setCopiedTextId(null), 2500);
   };
 
   if (windows.length === 0) {
@@ -87,7 +96,8 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
       <div className="grid grid-cols-1 gap-4">
         {filteredWindows.map((win) => {
           const isPerfect = win.overlapRatio === 1;
-          const isCopied = copiedId === win.id;
+          const isDiscordCopied = copiedDiscordId === win.id;
+          const isTextCopied = copiedTextId === win.id;
           const durationHours = (win.durationMinutes / 60).toFixed(win.durationMinutes % 60 === 0 ? 0 : 1);
 
           return (
@@ -137,24 +147,42 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopyWindow(win)}
-                  className="h-9 px-4 text-xs font-semibold self-start md:self-center shrink-0 border-border bg-background shadow-xs hover:bg-muted cursor-pointer"
-                >
-                  {isCopied ? (
-                    <>
-                      <Check className="w-4 h-4 mr-1.5 text-emerald-600" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4 mr-1.5" />
-                      Copy Time Breakdown
-                    </>
-                  )}
-                </Button>
+                {/* Copy Actions */}
+                <div className="flex flex-wrap items-center gap-2 self-start md:self-center shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyDiscord(win)}
+                    title="Copy formatted Discord message with dynamic <t:unix:t> timestamps"
+                    className="h-9 px-3.5 text-xs font-bold border-border bg-background shadow-xs hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 cursor-pointer"
+                  >
+                    {isDiscordCopied ? (
+                      <>
+                        <Check className="w-4 h-4 mr-1.5 text-emerald-600" />
+                        Copied for Discord!
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="w-3.5 h-3.5 mr-1.5 text-[#5865F2]" />
+                        Copy for Discord
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleCopyPlainText(win)}
+                    title="Copy plain text summary"
+                    className="h-9 px-2.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {isTextCopied ? (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {/* Multi-City Member Local Clocks Box */}
