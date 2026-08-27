@@ -32,7 +32,7 @@ import { DiscordExportModal } from './components/ShareExport/DiscordExportModal'
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './components/ui/dialog';
-import { Sparkles, Layers, KeyRound, Radio, ArrowRight, Clock, Users, Globe, Plus } from 'lucide-react';
+import { Sparkles, Layers, KeyRound, ArrowRight, Clock, Users, Globe, Plus } from 'lucide-react';
 
 export const App: React.FC = () => {
   // Theme & Viewer settings - Persistent theme preference
@@ -86,7 +86,6 @@ export const App: React.FC = () => {
   // Group state
   const [group, setGroup] = useState<Group | null>(null);
   const [isLoadingGroup, setIsLoadingGroup] = useState<boolean>(true);
-  const [isRealtimeConnected, setIsRealtimeConnected] = useState<boolean>(false);
   const [currentMemberId, setCurrentMemberId] = useState<string | null>(null);
   const [selectedFilterMemberId, setSelectedFilterMemberId] = useState<string | null>(null);
   const [editingMember, setEditingMember] = useState<GroupMember | undefined>(undefined);
@@ -135,7 +134,6 @@ export const App: React.FC = () => {
         const cloudGroup = await fetchGroup(groupId);
         if (cloudGroup) {
           setGroup(cloudGroup);
-          setIsRealtimeConnected(true);
           saveRecentGroup(cloudGroup.id, cloudGroup.name);
           resolveCurrentMember(cloudGroup);
 
@@ -265,7 +263,6 @@ export const App: React.FC = () => {
       saveCreatorToken(newGroup.id, newGroup.creatorToken || '');
       saveRecentGroup(newGroup.id, newGroup.name);
       setGroup(newGroup);
-      setIsRealtimeConnected(true);
 
       // Clean permanent URL
       const newUrl = `${window.location.origin}${window.location.pathname}?g=${newGroup.id}`;
@@ -361,9 +358,9 @@ export const App: React.FC = () => {
                 <div className="text-xs text-muted-foreground">Seamless UTC conversions across US & Europe</div>
               </div>
               <div className="p-4 rounded-xl bg-card border border-border/80 shadow-xs space-y-1">
-                <Radio className="w-5 h-5 text-emerald-600 mx-auto animate-pulse" />
-                <div className="text-sm font-semibold text-foreground">Live Cloud Sync</div>
-                <div className="text-xs text-muted-foreground">Updates appear on everyone's screen instantly</div>
+                <Users className="w-5 h-5 text-emerald-600 mx-auto" />
+                <div className="text-sm font-semibold text-foreground">Zero Sign-ups</div>
+                <div className="text-xs text-muted-foreground">Share the link and start painting instantly</div>
               </div>
               <div className="p-4 rounded-xl bg-card border border-border/80 shadow-xs space-y-1">
                 <Clock className="w-5 h-5 text-indigo-500 mx-auto" />
@@ -460,17 +457,9 @@ export const App: React.FC = () => {
             <div className="rounded-2xl border border-border bg-card p-6 sm:p-7 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <div className="flex items-center gap-2.5">
-                    <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
-                      {group.name}
-                    </h1>
-                    {isRealtimeConnected && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
-                        <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
-                        Live Cloud Sync
-                      </span>
-                    )}
-                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+                    {group.name}
+                  </h1>
                   <p className="text-base text-muted-foreground mt-1">
                     Find recurring weekly meeting windows where everyone's schedule overlaps.
                   </p>
