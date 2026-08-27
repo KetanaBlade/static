@@ -3,33 +3,59 @@ import { getTimezoneAbbreviation } from '../lib/timezone';
 import { GroupMember } from '../types';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
-import { Users, UserX, Edit3, ShieldAlert, Crown } from 'lucide-react';
+import { Users, UserX, Edit3, ShieldAlert, Crown, Lock, KeyRound, Check } from 'lucide-react';
 
 interface MemberListProps {
   members: GroupMember[];
   currentMemberId?: string | null;
   isCreator: boolean;
+  adminPin?: string;
   onEditMember: (member: GroupMember) => void;
   onRemoveMember: (memberId: string) => void;
   selectedMemberId?: string | null;
   onSelectMember: (memberId: string | null) => void;
+  onUnlockWithPin?: (pin: string) => boolean;
 }
 
 export const MemberList: React.FC<MemberListProps> = ({
   members,
   currentMemberId,
   isCreator,
+  adminPin,
   onEditMember,
   onRemoveMember,
   selectedMemberId,
   onSelectMember,
+  onUnlockWithPin,
 }) => {
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
+  const [isPinDialogOpen, setIsPinDialogOpen] = useState<boolean>(false);
+  const [pinInput, setPinInput] = useState<string>('');
+  const [pinError, setPinError] = useState<string>('');
+  const [pinSuccess, setPinSuccess] = useState<boolean>(false);
 
   const handleConfirmRemove = () => {
     if (memberToRemove) {
       onRemoveMember(memberToRemove.id);
       setMemberToRemove(null);
+    }
+  };
+
+  const handlePinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onUnlockWithPin) return;
+
+    const success = onUnlockWithPin(pinInput.trim());
+    if (success) {
+      setPinSuccess(true);
+      setPinError('');
+      setTimeout(() => {
+        setIsPinDialogOpen(false);
+        setPinSuccess(false);
+        setPinInput('');
+      }, 1000);
+    } else {
+      setPinError('Incorrect 4-digit Admin PIN. Please try again.');
     }
   };
 
@@ -40,6 +66,32 @@ export const MemberList: React.FC<MemberListProps> = ({
           <Users className="w-4 h-4 text-primary" />
           Group Members ({members.length})
         </span>
+
+        {/* Organizer PIN Unlock or Creator Status */}
+        <div>
+          {isCreator ? (
+            <span
+              title={adminPin ? `Your Admin PIN is ${adminPin}` : 'You are the group creator'}
+              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-500" />
+              <span>Organizer Active {adminPin && <span className="font-mono text-[11px] text-muted-foreground">(PIN: {adminPin})</span>}</span>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setIsPinDialogOpen(true);
+                setPinError('');
+                setPinInput('');
+              }}
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 py-1 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer"
+            >
+              <Lock className="w-3 h-3 text-muted-foreground" />
+              <span>Organizer Login</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {members.length === 0 ? (
@@ -53,7 +105,6 @@ export const MemberList: React.FC<MemberListProps> = ({
             const isSelected = selectedMemberId === member.id;
             const tzAbbr = getTimezoneAbbreviation(member.timezone);
             const totalHours = (member.slotsUtc.length * 0.5).toFixed(1);
-            // The first member in the group or creator gets a subtle creator indicator
             const isFirstOrCreator = index === 0;
 
             return (
@@ -118,6 +169,56 @@ export const MemberList: React.FC<MemberListProps> = ({
           })}
         </div>
       )}
+
+      {/* Organizer PIN Unlock Dialog */}
+      <Dialog open={isPinDialogOpen} onOpenChange={setIsPinDialogOpen}>
+        <DialogContent className="max-w-md">
+          <form onSubmit={handlePinSubmit}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-primary" />
+                Organizer PIN Login
+              </DialogTitle>
+              <DialogDescription className="text-sm pt-1">
+                Enter this group's 4-digit Admin PIN to unlock organizer controls (like removing members) on this device.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4 space-y-3">
+              <label className="text-sm font-bold text-foreground block">
+                4-Digit Admin PIN
+              </label>
+              <input
+                type="password"
+                maxLength={8}
+                autoFocus
+                required
+                placeholder="e.g. 8492"
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                className="w-full h-11 px-4 text-center font-mono tracking-widest text-lg font-bold rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs"
+              />
+              {pinError && (
+                <p className="text-xs font-semibold text-destructive">{pinError}</p>
+              )}
+              {pinSuccess && (
+                <p className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5" /> Organizer access unlocked!
+                </p>
+              )}
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" size="sm" onClick={() => setIsPinDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" size="sm" disabled={!pinInput.trim()}>
+                Unlock Controls
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Confirmation Dialog for Member Removal */}
       <Dialog open={!!memberToRemove} onOpenChange={(open) => !open && setMemberToRemove(null)}>

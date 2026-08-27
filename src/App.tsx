@@ -8,6 +8,7 @@ import {
   isGroupCreator,
   saveCreatorToken,
   saveUserProfile,
+  unlockCreatorWithPin,
 } from './lib/storage/localStorage';
 import { Group, GroupMember, SlotIndex } from './types';
 import { Header } from './components/Header';
@@ -20,7 +21,7 @@ import { ShareLinkModal } from './components/ShareExport/ShareLinkModal';
 import { DiscordExportModal } from './components/ShareExport/DiscordExportModal';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './components/ui/dialog';
-import { Sparkles, Layers } from 'lucide-react';
+import { Sparkles, Layers, KeyRound } from 'lucide-react';
 
 // Sample pre-populated group for instant demo if fresh visit
 const createSampleDemoGroup = (): Group => {
@@ -30,6 +31,7 @@ const createSampleDemoGroup = (): Group => {
     name: 'Weekend Gaming & Catch-up Squad',
     description: 'Coordinating hangout times across US and Europe',
     creatorToken,
+    adminPin: '1234',
     settings: { ...DEFAULT_GROUP_SETTINGS },
     members: [
       {
@@ -116,6 +118,12 @@ export const App: React.FC = () => {
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState<boolean>(false);
   const [isNewGroupModalOpen, setIsNewGroupModalOpen] = useState<boolean>(false);
   const [newGroupNameInput, setNewGroupNameInput] = useState<string>('');
+  const [newGroupPinInput, setNewGroupPinInput] = useState<string>(() =>
+    Math.floor(1000 + Math.random() * 9000).toString()
+  );
+
+  // Force re-render on unlock
+  const [, setAuthTick] = useState<number>(0);
 
   // Initial load from URL Hash or localStorage
   useEffect(() => {
@@ -225,10 +233,13 @@ export const App: React.FC = () => {
     if (!newGroupNameInput.trim()) return;
 
     const creatorToken = `token-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const pin = newGroupPinInput.trim() || Math.floor(1000 + Math.random() * 9000).toString();
+
     const newGroup: Group = {
       id: `group-${Date.now()}`,
       name: newGroupNameInput.trim(),
       creatorToken,
+      adminPin: pin,
       settings: { ...DEFAULT_GROUP_SETTINGS },
       members: [],
       createdAt: new Date().toISOString(),
@@ -241,6 +252,16 @@ export const App: React.FC = () => {
     setEditingMember(undefined);
     setIsNewGroupModalOpen(false);
     setNewGroupNameInput('');
+    setNewGroupPinInput(Math.floor(1000 + Math.random() * 9000).toString());
+  };
+
+  const handleUnlockWithPin = (enteredPin: string): boolean => {
+    if (!group) return false;
+    const success = unlockCreatorWithPin(group, enteredPin);
+    if (success) {
+      setAuthTick((prev) => prev + 1);
+    }
+    return success;
   };
 
   // Calculate Overlapping Windows
@@ -294,6 +315,7 @@ export const App: React.FC = () => {
             members={group.members}
             currentMemberId={currentMemberId}
             isCreator={isCreator}
+            adminPin={group.adminPin}
             onEditMember={(m) => {
               setEditingMember(m);
               setCurrentMemberId(m.id);
@@ -301,6 +323,7 @@ export const App: React.FC = () => {
             onRemoveMember={handleRemoveMember}
             selectedMemberId={selectedFilterMemberId}
             onSelectMember={setSelectedFilterMemberId}
+            onUnlockWithPin={handleUnlockWithPin}
           />
         </div>
 
@@ -381,31 +404,52 @@ export const App: React.FC = () => {
                 <Sparkles className="w-5 h-5 text-primary" />
                 Create New Group Schedule
               </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                Enter a name for your group (e.g. "DnD Campaign", "Friday Gaming", "Book Club").
+              <DialogDescription className="text-sm text-muted-foreground pt-1">
+                Name your group and choose a 4-digit Admin PIN to manage members.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="py-4">
-              <label className="text-xs font-bold text-foreground block mb-1.5">
-                Group Name
-              </label>
-              <input
-                type="text"
-                required
-                autoFocus
-                placeholder="e.g. Weekend Hangouts"
-                value={newGroupNameInput}
-                onChange={(e) => setNewGroupNameInput(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
+            <div className="py-4 space-y-4">
+              <div>
+                <label className="text-sm font-bold text-foreground block mb-1.5">
+                  Group Name <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  placeholder="e.g. Weekend Hangouts"
+                  value={newGroupNameInput}
+                  onChange={(e) => setNewGroupNameInput(e.target.value)}
+                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-bold text-foreground block mb-1.5 flex items-center gap-1.5">
+                  <KeyRound className="w-4 h-4 text-primary" />
+                  Organizer 4-Digit Admin PIN
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  required
+                  placeholder="4-digit PIN"
+                  value={newGroupPinInput}
+                  onChange={(e) => setNewGroupPinInput(e.target.value)}
+                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-background font-mono text-sm font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Save this PIN to moderate members if you open the link on another device.
+                </p>
+              </div>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">
               <Button type="button" variant="outline" size="sm" onClick={() => setIsNewGroupModalOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" size="sm" disabled={!newGroupNameInput.trim()}>
+              <Button type="submit" size="sm" disabled={!newGroupNameInput.trim() || !newGroupPinInput.trim()}>
                 Create Group
               </Button>
             </DialogFooter>

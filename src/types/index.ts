@@ -31,7 +31,8 @@ export interface Group {
   id: string;
   name: string;
   description?: string;
-  creatorToken?: string; // Stored in localStorage on creator's device for admin capabilities
+  creatorToken?: string; // Stored in localStorage on creator's device
+  adminPin?: string; // 4-digit PIN to unlock organizer controls on any device
   members: GroupMember[];
   settings: GroupSettings;
   createdAt: string;

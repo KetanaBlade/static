@@ -55,25 +55,13 @@ export function isGroupCreator(groupId: string, groupCreatorToken?: string): boo
   return tokens[groupId] === groupCreatorToken;
 }
 
-export function saveRecentGroup(group: Group): void {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.RECENT_GROUPS);
-    const groups: Group[] = raw ? JSON.parse(raw) : [];
-    const filtered = groups.filter((g) => g.id !== group.id);
-    filtered.unshift(group);
-    // Keep last 10
-    localStorage.setItem(STORAGE_KEYS.RECENT_GROUPS, JSON.stringify(filtered.slice(0, 10)));
-  } catch (err) {
-    console.error('Failed to save recent group:', err);
+export function unlockCreatorWithPin(group: Group, enteredPin: string): boolean {
+  if (!group.adminPin || !enteredPin) return false;
+  if (group.adminPin.trim() === enteredPin.trim()) {
+    if (group.creatorToken) {
+      saveCreatorToken(group.id, group.creatorToken);
+    }
+    return true;
   }
-}
-
-export function getRecentGroups(): Group[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.RECENT_GROUPS);
-    if (!raw) return [];
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return false;
 }

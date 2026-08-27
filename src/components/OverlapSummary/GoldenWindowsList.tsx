@@ -6,7 +6,6 @@ import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Trophy, Clock, Users, Copy, Check, Sparkles, CalendarDays, MessageSquare } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 interface GoldenWindowsListProps {
   windows: OverlappingWindow[];
@@ -23,21 +22,6 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
   const [copiedDiscordId, setCopiedDiscordId] = useState<string | null>(null);
   const [copiedTextId, setCopiedTextId] = useState<string | null>(null);
   const tzAbbr = getTimezoneAbbreviation(viewerTimezone);
-
-  React.useEffect(() => {
-    const hasPerfectMatch = windows.some((w) => w.overlapRatio === 1);
-    if (hasPerfectMatch) {
-      try {
-        confetti({
-          particleCount: 35,
-          spread: 60,
-          origin: { y: 0.8 },
-        });
-      } catch {
-        // Fallback
-      }
-    }
-  }, [windows]);
 
   const filteredWindows = windows.filter((w) => w.overlapRatio >= minRatioFilter);
 
