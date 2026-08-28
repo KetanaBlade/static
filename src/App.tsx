@@ -507,11 +507,11 @@ export const App: React.FC = () => {
             {/* SECTION 2: RESULTS & GROUP OVERLAP */}
             <section aria-labelledby="section-results" className="space-y-6 pt-4 border-t border-border">
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2.5">
-                  <Layers className="w-5 h-5 text-primary" />
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2.5">
+                  <Layers className="w-6 h-6 text-primary" />
                   Group Overlap Results
                 </h2>
-                <p className="text-base text-muted-foreground mt-1">
+                <p className="text-sm sm:text-base text-muted-foreground mt-1">
                   The optimal meeting windows where members' schedules align across timezones.
                 </p>
               </div>
