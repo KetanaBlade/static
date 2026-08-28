@@ -44,33 +44,33 @@
   }
 
   .dark {
-    /* Sleek Inverted Dark Theme: Deep warm dark canvas with rich obsidian cards */
-    --background: 30 10% 12%;   /* Deep warm dark canvas (#211E1C) */
+    /* Ultra-Sleek Inverted Dark Theme: Deep warm dark canvas with midnight obsidian cards */
+    --background: 30 10% 11%;   /* Ultra-deep warm dark canvas (#1E1C1A) */
     --foreground: 40 15% 93%;   /* Crisp warm off-white text (#F3F1ED) */
     
-    --card: 30 9% 9.5%;         /* Deep obsidian card (#171514) */
+    --card: 30 9% 8.5%;         /* Midnight obsidian card (#151312) */
     --card-foreground: 40 15% 93%;
     
-    --popover: 30 9% 9.5%;
+    --popover: 30 9% 8.5%;
     --popover-foreground: 40 15% 93%;
     
     --primary: 6 78% 62%;       /* #EF6453 - Dark Peach / Coral Red */
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 30 10% 16%;
+    --secondary: 30 10% 14.5%;
     --secondary-foreground: 40 15% 93%;
     
-    --muted: 30 10% 14%;
+    --muted: 30 10% 13%;
     --muted-foreground: 40 12% 70%;
     
-    --accent: 30 10% 17%;
+    --accent: 30 10% 15.5%;
     --accent-foreground: 40 15% 93%;
     
     --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 30 10% 18%;
-    --input: 30 9% 9.5%;
+    --border: 30 10% 16%;
+    --input: 30 9% 8.5%;
     --ring: 6 78% 62%;
     
     --radius: 0.75rem;
