@@ -150,11 +150,11 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
   const hasValidIdentity = Boolean(name.trim());
 
   return (
-    <Card className="border-border bg-card/90 backdrop-blur-md shadow-sm transition-all">
-      <CardHeader className="p-6 sm:p-7 pb-5 border-b border-border/60">
+    <Card className="border border-border bg-card/90 backdrop-blur-sm shadow-sm transition-all rounded-lg overflow-hidden">
+      <CardHeader className="p-6 pb-4 border-b border-border/40 bg-muted/20">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2.5">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
               <UserCheck className="w-6 h-6 text-primary" />
               {currentMember ? `Your Availability (${currentMember.name})` : 'Your Weekly Availability'}
             </CardTitle>

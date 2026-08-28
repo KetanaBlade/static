@@ -346,15 +346,15 @@ export const App: React.FC = () => {
           /* ================= ROOT LANDING SCREEN ================= */
           <div className="max-w-2xl mx-auto py-8 sm:py-16 space-y-8">
             {/* Hero */}
-            <div className="text-center space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-semibold bg-primary/10 text-primary border border-primary/20 tracking-tight uppercase">
                 <Sparkles className="w-3.5 h-3.5" />
                 Zero-Friction Weekly Scheduling
               </div>
-              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground">
+              <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tighter text-foreground leading-[1.1]">
                 Find the perfect hangout window across any timezone.
               </h1>
-              <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed font-medium">
                 Zero logins, zero passwords. Create a group, select your free hours, and share the live link with your friends.
               </p>
             </div>
@@ -379,20 +379,20 @@ export const App: React.FC = () => {
             </div>
 
             {/* Quick Create Group Card */}
-            <Card className="border-border bg-card shadow-sm">
-              <CardHeader className="p-6 pb-3">
-                <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <Card className="border border-border bg-card shadow-sm rounded-lg overflow-hidden">
+              <CardHeader className="p-6 pb-4 border-b border-border/40 bg-muted/20">
+                <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                   <Plus className="w-5 h-5 text-primary" />
                   Create a New Group
                 </CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">
+                <CardDescription className="text-sm font-medium text-muted-foreground mt-1.5">
                   Give your group a name and choose an optional 4-digit Admin PIN to manage members.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-6 pt-2">
-                <form onSubmit={handleCreateNewGroup} className="space-y-4">
+              <CardContent className="p-6">
+                <form onSubmit={handleCreateNewGroup} className="space-y-5">
                   <div>
-                    <label className="text-sm font-semibold text-foreground block mb-1.5">
+                    <label className="text-sm font-bold tracking-tight text-foreground block mb-2">
                       Group Name <span className="text-destructive">*</span>
                     </label>
                     <input
@@ -401,12 +401,12 @@ export const App: React.FC = () => {
                       placeholder="e.g. Arcadion, Weekend Gaming, Book Club"
                       value={newGroupNameInput}
                       onChange={(e) => setNewGroupNameInput(e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl border border-border bg-background text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs"
+                      className="w-full h-11 px-3.5 rounded-md border border-input bg-background text-base font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold text-foreground block mb-1.5 flex items-center gap-1.5">
+                    <label className="text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5 mb-2">
                       <KeyRound className="w-4 h-4 text-primary" />
                       Organizer 4-Digit Admin PIN
                     </label>
@@ -417,9 +417,9 @@ export const App: React.FC = () => {
                       placeholder="4-digit PIN"
                       value={newGroupPinInput}
                       onChange={(e) => setNewGroupPinInput(e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl border border-border bg-background font-mono text-sm font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs"
+                      className="w-full h-11 px-3.5 rounded-md border border-input bg-background font-mono text-sm font-bold tracking-widest focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs transition-colors"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs font-medium text-muted-foreground mt-2">
                       Save this PIN to manage members from other devices.
                     </p>
                   </div>
@@ -427,9 +427,9 @@ export const App: React.FC = () => {
                   <Button
                     type="submit"
                     disabled={!newGroupNameInput.trim() || !newGroupPinInput.trim()}
-                    className="w-full h-12 text-base font-semibold shadow-md cursor-pointer"
+                    className="w-full h-11 rounded-md text-sm font-bold tracking-tight cursor-pointer"
                   >
-                    Create Live Group Schedule <ArrowRight className="w-4 h-4 ml-2" />
+                    Start Scheduling <ArrowRight className="w-4 h-4 ml-1.5" />
                   </Button>
                 </form>
               </CardContent>
