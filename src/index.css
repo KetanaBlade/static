@@ -44,33 +44,33 @@
   }
 
   .dark {
-    /* Slightly lifted warm dark theme with coral/peach accents */
-    --background: 30 10% 12.5%; /* Deep warm charcoal - lifted & softer on the eyes */
+    /* Grounded deep backdrop with elevated warm cards & coral/peach accents */
+    --background: 28 8% 9.5%;   /* Deep grounded backdrop (#171514) - brings back contrast */
     --foreground: 40 15% 93%;   /* Crisp warm off-white text */
     
-    --card: 30 10% 15.5%;       /* Softly lifted warm dark card */
+    --card: 30 10% 16.5%;       /* Distinctly lifted warm dark card (#2E2A27) */
     --card-foreground: 40 15% 93%;
     
-    --popover: 30 10% 15.5%;
+    --popover: 30 10% 16.5%;
     --popover-foreground: 40 15% 93%;
     
     --primary: 6 78% 62%;       /* #EF6453 - Dark Peach / Coral Red */
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 30 10% 21%;
+    --secondary: 30 10% 22%;
     --secondary-foreground: 40 15% 93%;
     
-    --muted: 30 10% 19%;
+    --muted: 30 10% 20%;
     --muted-foreground: 40 10% 68%;
     
-    --accent: 30 10% 23%;
+    --accent: 30 10% 24%;
     --accent-foreground: 40 15% 93%;
     
     --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 30 10% 24%;
-    --input: 30 10% 24%;
+    --border: 30 10% 25%;
+    --input: 30 10% 25%;
     --ring: 6 78% 62%;
     
     --radius: 0.75rem;
