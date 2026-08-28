@@ -4,6 +4,13 @@ import { formatSlotTime, timeRangesToUtcSlots, utcSlotsToTimeRanges } from '../.
 import { SlotIndex, TimeRange } from '../../types';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 import { Clock, Plus, X } from 'lucide-react';
 
 interface RangeBuilderProps {
@@ -22,6 +29,14 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
   const [selectedDay, setSelectedDay] = useState<number>(5); // Default: Saturday
   const [startSlotInDay, setStartSlotInDay] = useState<number>(24); // Default: 12:00 PM (slot 24)
   const [endSlotInDay, setEndSlotInDay] = useState<number>(34); // Default: 5:00 PM (slot 34)
+
+  // Time options for dropdowns (48 slots = every 30 mins)
+  const timeOptions = React.useMemo(() => {
+    return Array.from({ length: 49 }, (_, i) => ({
+      slot: i,
+      label: i === 48 ? '12:00 AM (Next Day)' : formatSlotTime(i, timeFormat),
+    }));
+  }, [timeFormat]);
 
   // Derive active time ranges from current slots in local timezone
   const activeRanges = React.useMemo(() => {
@@ -50,23 +65,17 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
   };
 
   const handleRemoveRange = (rangeToRemove: TimeRange) => {
-    const rangeSlotsToRemove = timeRangesToUtcSlots([rangeToRemove], timezone);
-    const toRemoveSet = new Set(rangeSlotsToRemove);
-    const filtered = currentSlots.filter((slot) => !toRemoveSet.has(slot));
-    onSlotsChange(filtered);
+    const slotsToRemove = timeRangesToUtcSlots([rangeToRemove], timezone);
+    const slotsToRemoveSet = new Set(slotsToRemove);
+    const remaining = currentSlots.filter((slot) => !slotsToRemoveSet.has(slot));
+    onSlotsChange(remaining);
   };
-
-  // Time options for dropdowns (48 slots = every 30 mins)
-  const timeOptions = Array.from({ length: 49 }, (_, i) => ({
-    slot: i,
-    label: i === 48 ? '12:00 AM (Next Day)' : formatSlotTime(i, timeFormat),
-  }));
 
   return (
     <div className="space-y-4">
-      {/* Form Controls */}
-      <div className="rounded-2xl border border-border bg-card p-6 space-y-4 shadow-xs">
-        <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      {/* Range Input Controls */}
+      <div className="p-4 sm:p-5 rounded-lg border border-border bg-card shadow-xs space-y-4">
+        <div className="text-sm font-bold text-foreground flex items-center gap-2">
           <Clock className="w-4 h-4 text-primary" />
           Add Custom Time Range
         </div>
@@ -74,65 +83,76 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Day selector */}
           <div>
-            <label className="text-sm sm:text-base font-semibold text-foreground block mb-1.5">Day of Week</label>
-            <select
-              value={selectedDay}
-              onChange={(e) => setSelectedDay(Number(e.target.value))}
-              aria-label="Select day of week"
-              className="w-full h-11 px-3.5 rounded-lg border border-border bg-card text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer"
+            <label className="text-xs font-bold text-foreground block mb-1.5">Day of Week</label>
+            <Select
+              value={selectedDay.toString()}
+              onValueChange={(val) => setSelectedDay(Number(val))}
             >
-              {DAYS_OF_WEEK.map((day) => (
-                <option key={day.index} value={day.index}>
-                  {day.name} {day.isWeekend ? '🌟' : ''}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-10 text-sm">
+                <SelectValue placeholder="Select day" />
+              </SelectTrigger>
+              <SelectContent>
+                {DAYS_OF_WEEK.map((day) => (
+                  <SelectItem key={day.index} value={day.index.toString()}>
+                    {day.name} {day.isWeekend ? '🌟' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Start Time */}
           <div>
-            <label className="text-sm sm:text-base font-semibold text-foreground block mb-1.5">From</label>
-            <select
-              value={startSlotInDay}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setStartSlotInDay(val);
-                if (endSlotInDay <= val) {
-                  setEndSlotInDay(Math.min(48, val + 4)); // Default to 2 hours later
+            <label className="text-xs font-bold text-foreground block mb-1.5">From</label>
+            <Select
+              value={startSlotInDay.toString()}
+              onValueChange={(val) => {
+                const num = Number(val);
+                setStartSlotInDay(num);
+                if (endSlotInDay <= num) {
+                  setEndSlotInDay(Math.min(48, num + 4));
                 }
               }}
-              aria-label="Select start time"
-              className="w-full h-11 px-3.5 rounded-lg border border-border bg-card text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 tabular-nums shadow-xs cursor-pointer"
             >
-              {timeOptions.slice(0, 48).map((opt) => (
-                <option key={opt.slot} value={opt.slot}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-10 text-sm tabular-nums">
+                <SelectValue placeholder="Start time" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {timeOptions.slice(0, 48).map((opt) => (
+                  <SelectItem key={opt.slot} value={opt.slot.toString()}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* End Time */}
           <div>
-            <label className="text-sm sm:text-base font-semibold text-foreground block mb-1.5">To</label>
-            <select
-              value={endSlotInDay}
-              onChange={(e) => setEndSlotInDay(Number(e.target.value))}
-              aria-label="Select end time"
-              className="w-full h-11 px-3.5 rounded-lg border border-border bg-card text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 tabular-nums shadow-xs cursor-pointer"
+            <label className="text-xs font-bold text-foreground block mb-1.5">To</label>
+            <Select
+              value={endSlotInDay.toString()}
+              onValueChange={(val) => setEndSlotInDay(Number(val))}
             >
-              {timeOptions.filter((opt) => opt.slot > startSlotInDay).map((opt) => (
-                <option key={opt.slot} value={opt.slot}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-10 text-sm tabular-nums">
+                <SelectValue placeholder="End time" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {timeOptions
+                  .filter((opt) => opt.slot > startSlotInDay)
+                  .map((opt) => (
+                    <SelectItem key={opt.slot} value={opt.slot.toString()}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <Button
           onClick={handleAddRange}
-          className="w-full sm:w-auto h-11 px-6 text-sm sm:text-base font-semibold mt-1 shadow-xs cursor-pointer"
+          className="w-full sm:w-auto h-10 px-5 text-xs font-bold mt-1 shadow-xs cursor-pointer"
           size="sm"
         >
           <Plus className="w-4 h-4 mr-1.5" />
@@ -168,7 +188,7 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
                   <button
                     onClick={() => handleRemoveRange(range)}
                     aria-label={`Remove window for ${dayName} ${startFormatted} to ${endFormatted}`}
-                    className="ml-1 rounded-full p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                    className="ml-1 rounded-sm p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

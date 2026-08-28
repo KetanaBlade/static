@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getTimezoneAbbreviation } from '../lib/timezone';
 import { GroupMember } from '../types';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Users, UserX, Edit3, ShieldAlert, Crown, Lock, KeyRound, Check, Copy, User, ChevronRight } from 'lucide-react';
 
 interface MemberListProps {
@@ -74,17 +76,22 @@ export const MemberList: React.FC<MemberListProps> = ({
   return (
     <Card className="border border-border bg-card shadow-sm transition-all rounded-lg overflow-hidden">
       <CardHeader 
-        className="p-5 sm:p-6 cursor-pointer hover:bg-muted/30 transition-colors select-none flex flex-row items-center justify-between border-b border-border/40"
+        className="p-5 sm:p-6 cursor-pointer hover:bg-muted/30 transition-colors select-none flex flex-row items-center justify-between"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 pr-4">
           <div className="flex items-center gap-3">
-            <Users className="w-5 h-5 text-primary" />
+            <div className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4" />
+            </div>
             <div>
               <CardTitle className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
                 Group Members 
                 <span className="text-xs font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-sm">{members.length}</span>
               </CardTitle>
+              <CardDescription className="text-sm font-medium text-muted-foreground mt-0.5">
+                View and manage roster members across timezones.
+              </CardDescription>
             </div>
           </div>
 
@@ -122,99 +129,123 @@ export const MemberList: React.FC<MemberListProps> = ({
             )}
           </div>
         </div>
-        <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 shrink-0 ${isCollapsed ? '' : 'rotate-90'}`} />
+        <motion.div
+          animate={{ rotate: isCollapsed ? 0 : 90 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+        </motion.div>
       </CardHeader>
 
-      {!isCollapsed && (
-        <CardContent className="p-6">
-          {members.length === 0 ? (
-            <div className="text-sm font-medium text-muted-foreground italic p-6 rounded-xl border border-dashed bg-muted/20 text-center">
-              No members yet. Add your name and availability below to get started!
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2.5">
-              {members.map((member) => {
-                const isMe = member.id === currentMemberId;
-                const isSelected = selectedMemberId === member.id;
-                const tzAbbr = getTimezoneAbbreviation(member.timezone);
-                const totalHours = (member.slotsUtc.length * 0.5).toFixed(1);
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.div
+            key="member-content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <CardContent className="p-6 border-t border-border/40">
+              {members.length === 0 ? (
+                <div className="text-sm font-medium text-muted-foreground italic p-6 rounded-lg border border-dashed bg-muted/20 text-center">
+                  No members yet. Add your name and availability below to get started!
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2.5">
+                  <AnimatePresence mode="popLayout">
+                    {members.map((member) => {
+                      const isMe = member.id === currentMemberId;
+                      const isSelected = selectedMemberId === member.id;
+                      const tzAbbr = getTimezoneAbbreviation(member.timezone);
+                      const totalHours = (member.slotsUtc.length * 0.5).toFixed(1);
 
-                return (
-                  <div
-                    key={member.id}
-                    className={`inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-sm transition-all shadow-xs ${
-                      isSelected
-                        ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 font-semibold'
-                        : 'border-border bg-card hover:border-primary/40 text-foreground'
-                    }`}
-                  >
-                    {/* Clickable name to filter heatmap */}
+                      return (
+                        <motion.div
+                          key={member.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          whileHover={{ y: -1 }}
+                          transition={{ duration: 0.2 }}
+                          className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-md border text-sm transition-all shadow-2xs ${
+                            isSelected
+                              ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/40 font-semibold shadow-xs'
+                              : 'border-border bg-card hover:border-primary/40 text-foreground'
+                          }`}
+                        >
+                          {/* Clickable name to filter heatmap */}
+                          <button
+                            type="button"
+                            onClick={() => onSelectMember(isSelected ? null : member.id)}
+                            title={`Click to highlight ${member.name}'s schedule on the heatmap`}
+                            className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            <span className="w-5 h-5 rounded-sm bg-primary/15 text-primary text-xs font-bold font-mono flex items-center justify-center">
+                              {member.name.charAt(0).toUpperCase()}
+                            </span>
+                            <span>{member.name}</span>
+                            {isMe && (
+                              <span className="inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm bg-primary/15 text-primary border border-primary/20">
+                                <User className="w-2.5 h-2.5" /> You
+                              </span>
+                            )}
+                          </button>
+
+                          <span className="text-xs font-mono font-medium text-muted-foreground tabular-nums">
+                            {tzAbbr} • {totalHours}h
+                          </span>
+
+                          {/* Edit Button for current user */}
+                          {isMe && (
+                            <button
+                              type="button"
+                              onClick={() => onEditMember(member)}
+                              title="Edit my availability"
+                              aria-label={`Edit availability for ${member.name}`}
+                              className="p-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
+                          {/* Remove Button (Visible to creator or for self) */}
+                          {(isCreator || isMe) && (
+                            <button
+                              type="button"
+                              onClick={() => setMemberToRemove(member)}
+                              title={`Remove ${member.name} from group`}
+                              aria-label={`Remove ${member.name} from group`}
+                              className="p-1 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                            >
+                              <UserX className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                  
+                  {/* Add Another Person Button */}
+                  {onAddNewMember && (
                     <button
                       type="button"
-                      onClick={() => onSelectMember(isSelected ? null : member.id)}
-                      title={`Click to highlight ${member.name}'s schedule on the heatmap`}
-                      className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-2 cursor-pointer"
+                      onClick={onAddNewMember}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-dashed border-border bg-muted/20 hover:bg-muted/50 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all cursor-pointer shadow-none active:scale-[0.98]"
                     >
-                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-semibold flex items-center justify-center">
-                    {member.name.charAt(0).toUpperCase()}
-                  </span>
-                  <span>{member.name}</span>
-                  {isMe && (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded bg-primary/15 text-primary">
-                      <User className="w-3 h-3" /> You
-                    </span>
+                      <User className="w-4 h-4" />
+                      <span className="text-xl leading-none -mt-0.5 font-light">+</span>
+                      Add Person
+                    </button>
                   )}
-                </button>
-
-                <span className="text-xs sm:text-sm font-mono font-medium text-muted-foreground tabular-nums">
-                  {tzAbbr} • {totalHours}h
-                </span>
-
-                {/* Edit Button for current user */}
-                {isMe && (
-                  <button
-                    type="button"
-                    onClick={() => onEditMember(member)}
-                    title="Edit my availability"
-                    aria-label={`Edit availability for ${member.name}`}
-                    className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-
-                {/* Remove Button (Visible to creator or for self) */}
-                {(isCreator || isMe) && (
-                  <button
-                    type="button"
-                    onClick={() => setMemberToRemove(member)}
-                    title={`Remove ${member.name} from group`}
-                    aria-label={`Remove ${member.name} from group`}
-                    className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                  >
-                    <UserX className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
-          
-          {/* Add Another Person Button */}
-          {onAddNewMember && (
-            <button
-              type="button"
-              onClick={onAddNewMember}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-dashed border-border bg-muted/20 hover:bg-muted/50 text-sm font-semibold text-muted-foreground hover:text-foreground transition-all cursor-pointer shadow-none"
-            >
-              <User className="w-4 h-4" />
-              <span className="text-xl leading-none -mt-0.5 font-light">+</span>
-              Add Person
-            </button>
-          )}
-        </div>
-      )}
-      </CardContent>
-      )}
+                </div>
+              )}
+            </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Organizer PIN Unlock Dialog */}
       <Dialog open={isPinDialogOpen} onOpenChange={setIsPinDialogOpen}>
@@ -234,7 +265,7 @@ export const MemberList: React.FC<MemberListProps> = ({
               <label className="text-sm sm:text-base font-semibold text-foreground block">
                 4-Digit Admin PIN
               </label>
-              <input
+              <Input
                 type="password"
                 maxLength={8}
                 autoFocus
@@ -242,7 +273,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                 placeholder="e.g. 8492"
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
-                className="w-full h-11 px-4 text-center font-mono tracking-widest text-lg font-semibold rounded-lg border border-border bg-card focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs"
+                className="w-full h-11 text-center font-mono tracking-widest text-lg font-semibold"
               />
               {pinError && (
                 <p className="text-sm font-semibold text-destructive">{pinError}</p>

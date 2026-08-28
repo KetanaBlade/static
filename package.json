@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run --fileParallelism=false",
     "test:watch": "vitest"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "@supabase/supabase-js": "^2.112.4",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
+    "framer-motion": "^13.1.1",
     "lucide-react": "^1.16.0",
     "lz-string": "^1.5.0",
     "react": "^18.3.1",

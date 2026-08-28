@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { detectUserTimezone } from './lib/timezone';
 import { findOverlappingWindows } from './lib/overlap';
 import {
@@ -30,6 +31,7 @@ import { OverlapThresholdFilter } from './components/OverlapSummary/OverlapThres
 import { ShareLinkModal } from './components/ShareExport/ShareLinkModal';
 import { DiscordExportModal } from './components/ShareExport/DiscordExportModal';
 import { Button } from './components/ui/button';
+import { Input } from './components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './components/ui/dialog';
 import { Sparkles, Layers, KeyRound, ArrowRight, Clock, Users, Globe, Plus, ChevronRight } from 'lucide-react';
@@ -354,41 +356,55 @@ export const App: React.FC = () => {
 
       {/* Main Content Dashboard */}
       <main className="flex-1 container mx-auto max-w-7xl px-4 py-8">
-        {isLoadingGroup ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-            <p className="text-sm font-semibold text-muted-foreground">Connecting to Live Group...</p>
-          </div>
-        ) : !group ? (
-          /* ================= ROOT LANDING SCREEN ================= */
-          <div className="max-w-2xl mx-auto py-8 sm:py-16 space-y-8">
+        <AnimatePresence mode="wait">
+          {isLoadingGroup ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-24 space-y-4"
+            >
+              <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <p className="text-sm font-semibold text-muted-foreground">Connecting to Live Group...</p>
+            </motion.div>
+          ) : !group ? (
+            /* ================= ROOT LANDING SCREEN ================= */
+            <motion.div
+              key="landing"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="max-w-2xl mx-auto py-8 sm:py-16 space-y-8"
+            >
             {/* Hero */}
             <div className="text-center space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-semibold bg-primary/10 text-primary border border-primary/20 tracking-tight uppercase">
                 <Sparkles className="w-3.5 h-3.5" />
                 Zero-Friction Weekly Scheduling
               </div>
-              <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tighter text-foreground leading-[1.1]">
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
                 Find the perfect hangout window across any timezone.
               </h1>
-              <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed font-medium">
+              <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed font-medium">
                 Zero logins, zero passwords. Create a group, select your free hours, and share the live link with your friends.
               </p>
             </div>
 
             {/* Feature Highlights */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-              <div className="p-4 rounded-2xl bg-card/80 border border-border/80 backdrop-blur-sm shadow-xs space-y-1">
+              <div className="p-4 rounded-lg bg-card border border-border shadow-xs space-y-1">
                 <Globe className="w-5 h-5 text-primary mx-auto" />
                 <div className="text-sm font-bold text-foreground">Timezone Magic</div>
                 <div className="text-xs text-muted-foreground">Seamless UTC conversions across US & Europe</div>
               </div>
-              <div className="p-4 rounded-2xl bg-card/80 border border-border/80 backdrop-blur-sm shadow-xs space-y-1">
+              <div className="p-4 rounded-lg bg-card border border-border shadow-xs space-y-1">
                 <Users className="w-5 h-5 text-emerald-600 mx-auto" />
                 <div className="text-sm font-bold text-foreground">Zero Sign-ups</div>
                 <div className="text-xs text-muted-foreground">Share the link and start selecting times instantly</div>
               </div>
-              <div className="p-4 rounded-2xl bg-card/80 border border-border/80 backdrop-blur-sm shadow-xs space-y-1">
+              <div className="p-4 rounded-lg bg-card border border-border shadow-xs space-y-1">
                 <Clock className="w-5 h-5 text-indigo-500 mx-auto" />
                 <div className="text-sm font-bold text-foreground">Discord Ready</div>
                 <div className="text-xs text-muted-foreground">1-click dynamic Unix timestamp copy</div>
@@ -398,11 +414,11 @@ export const App: React.FC = () => {
             {/* Quick Create Group Card */}
             <Card className="border border-border bg-card shadow-sm rounded-lg overflow-hidden">
               <CardHeader className="p-6 pb-4 border-b border-border/40 bg-muted/20">
-                <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                <CardTitle className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
                   <Plus className="w-5 h-5 text-primary" />
                   Create a New Group
                 </CardTitle>
-                <CardDescription className="text-sm font-medium text-muted-foreground mt-1.5">
+                <CardDescription className="text-sm font-medium text-muted-foreground mt-1">
                   Give your group a name and choose an optional 4-digit Admin PIN to manage members.
                 </CardDescription>
               </CardHeader>
@@ -412,13 +428,13 @@ export const App: React.FC = () => {
                     <label className="text-sm font-bold tracking-tight text-foreground block mb-2">
                       Group Name <span className="text-destructive">*</span>
                     </label>
-                    <input
+                    <Input
                       type="text"
                       required
                       placeholder="e.g. Arcadion, Weekend Gaming, Book Club"
                       value={newGroupNameInput}
                       onChange={(e) => setNewGroupNameInput(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-md border border-input bg-card text-base font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs transition-colors"
+                      className="w-full h-10 text-sm"
                     />
                   </div>
 
@@ -427,14 +443,14 @@ export const App: React.FC = () => {
                       <KeyRound className="w-4 h-4 text-primary" />
                       Organizer 4-Digit Admin PIN
                     </label>
-                    <input
+                    <Input
                       type="text"
                       maxLength={6}
                       required
                       placeholder="4-digit PIN"
                       value={newGroupPinInput}
                       onChange={(e) => setNewGroupPinInput(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-md border border-input bg-card font-mono text-sm font-bold tracking-widest focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs transition-colors"
+                      className="w-full h-10 font-mono text-sm font-bold tracking-widest"
                     />
                     <p className="text-xs font-medium text-muted-foreground mt-2">
                       Save this PIN to manage members from other devices.
@@ -444,7 +460,7 @@ export const App: React.FC = () => {
                   <Button
                     type="submit"
                     disabled={!newGroupNameInput.trim() || !newGroupPinInput.trim()}
-                    className="w-full h-11 rounded-md text-sm font-bold tracking-tight cursor-pointer"
+                    className="w-full h-10 rounded-md text-xs font-bold tracking-tight cursor-pointer"
                   >
                     Start Scheduling <ArrowRight className="w-4 h-4 ml-1.5" />
                   </Button>
@@ -455,7 +471,7 @@ export const App: React.FC = () => {
             {/* Recent Groups List */}
             {recentGroups.length > 0 && (
               <div className="space-y-2.5">
-                <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                   <Users className="w-4 h-4 text-primary" />
                   Your Recent Groups on this Device:
                 </div>
@@ -464,7 +480,7 @@ export const App: React.FC = () => {
                     <a
                       key={rg.id}
                       href={`?g=${rg.id}`}
-                      className="p-3.5 rounded-xl border border-border bg-card hover:border-primary/50 hover:bg-primary/[0.02] flex items-center justify-between transition-all shadow-xs group"
+                      className="p-3.5 rounded-lg border border-border bg-card hover:border-primary/50 hover:bg-primary/[0.02] flex items-center justify-between transition-all shadow-xs group"
                     >
                       <div className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">
                         {rg.name}
@@ -475,18 +491,25 @@ export const App: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         ) : (
           /* ================= ACTIVE GROUP DASHBOARD ================= */
-          <div className="space-y-8">
-            {/* Group Header & Member List Strip */}
-            <div className="rounded-2xl border border-border bg-card p-6 sm:p-7 shadow-xs space-y-4">
+          <motion.div
+            key={group.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="space-y-8"
+          >
+            {/* Group Header & Member List */}
+            <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
                     {group.name}
                   </h1>
-                  <p className="text-base text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1 font-medium">
                     Find recurring weekly meeting windows where everyone's schedule overlaps.
                   </p>
                 </div>
@@ -535,46 +558,62 @@ export const App: React.FC = () => {
                   onClick={() => setIsResultsCollapsed(!isResultsCollapsed)}
                 >
                   <div className="flex items-center gap-3">
-                    <Layers className="w-5 h-5 text-primary" />
+                    <div className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Layers className="w-4 h-4" />
+                    </div>
                     <div>
                       <CardTitle className="text-lg font-bold tracking-tight text-foreground">
                         Group Overlap Results
                       </CardTitle>
-                      {!isResultsCollapsed && (
-                        <CardDescription className="text-sm font-medium text-muted-foreground mt-1">
-                          The optimal meeting windows where members' schedules align across timezones.
-                        </CardDescription>
-                      )}
+                      <CardDescription className="text-sm font-medium text-muted-foreground mt-0.5">
+                        The optimal meeting windows where members' schedules align across timezones.
+                      </CardDescription>
                     </div>
                   </div>
-                  <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isResultsCollapsed ? '' : 'rotate-90'}`} />
+                  <motion.div
+                    animate={{ rotate: isResultsCollapsed ? 0 : 90 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                  </motion.div>
                 </CardHeader>
 
-                {!isResultsCollapsed && (
-                  <CardContent className="p-6 border-t border-border/40 space-y-6">
-                    {/* Filter & Threshold Bar with Timezone Selector & Member Exclusions */}
-                    <OverlapThresholdFilter
-                      viewerTimezone={viewerTimezone}
-                      onTimezoneChange={setViewerTimezone}
-                      minRatio={minRatioFilter}
-                      onMinRatioChange={setMinRatioFilter}
-                      minDurationMinutes={minDurationMinutes}
-                      onMinDurationChange={setMinDurationMinutes}
-                      members={group.members}
-                      excludedMemberIds={excludedMemberIds}
-                      onToggleExcludeMember={handleToggleExcludeMember}
-                      onResetExcludedMembers={handleResetExcludedMembers}
-                    />
+                <AnimatePresence initial={false}>
+                  {!isResultsCollapsed && (
+                    <motion.div
+                      key="results-content"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <CardContent className="p-6 border-t border-border/40 space-y-6">
+                        {/* Filter & Threshold Bar with Timezone Selector & Member Exclusions */}
+                        <OverlapThresholdFilter
+                          viewerTimezone={viewerTimezone}
+                          onTimezoneChange={setViewerTimezone}
+                          minRatio={minRatioFilter}
+                          onMinRatioChange={setMinRatioFilter}
+                          minDurationMinutes={minDurationMinutes}
+                          onMinDurationChange={setMinDurationMinutes}
+                          members={group.members}
+                          excludedMemberIds={excludedMemberIds}
+                          onToggleExcludeMember={handleToggleExcludeMember}
+                          onResetExcludedMembers={handleResetExcludedMembers}
+                        />
 
-                    {/* Ranked Best Hangout Times */}
-                    <GoldenWindowsList
-                      windows={overlappingWindows}
-                      groupName={group.name}
-                      viewerTimezone={viewerTimezone}
-                      minRatioFilter={minRatioFilter}
-                    />
-                  </CardContent>
-                )}
+                        {/* Ranked Best Hangout Times */}
+                        <GoldenWindowsList
+                          windows={overlappingWindows}
+                          groupName={group.name}
+                          viewerTimezone={viewerTimezone}
+                          minRatioFilter={minRatioFilter}
+                        />
+                      </CardContent>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </Card>
 
               {/* Master Visual Chart */}
@@ -586,8 +625,9 @@ export const App: React.FC = () => {
                 minRatioFilter={minRatioFilter}
               />
             </section>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </main>
 
       {/* Modals */}
@@ -630,14 +670,14 @@ export const App: React.FC = () => {
                 <label className="text-sm font-semibold text-foreground block mb-1.5">
                   Group Name <span className="text-destructive">*</span>
                 </label>
-                <input
+                <Input
                   type="text"
                   required
                   autoFocus
                   placeholder="e.g. Arcadion"
                   value={newGroupNameInput}
                   onChange={(e) => setNewGroupNameInput(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-card text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full h-11 text-sm font-medium"
                 />
               </div>
 
@@ -646,14 +686,14 @@ export const App: React.FC = () => {
                   <KeyRound className="w-4 h-4 text-primary" />
                   Organizer 4-Digit Admin PIN
                 </label>
-                <input
+                <Input
                   type="text"
                   maxLength={6}
                   required
                   placeholder="4-digit PIN"
                   value={newGroupPinInput}
                   onChange={(e) => setNewGroupPinInput(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-card font-mono text-sm font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full h-11 font-mono text-sm font-semibold tracking-widest"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Save this PIN to moderate members if you open the link on another device.

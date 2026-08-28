@@ -36,17 +36,17 @@ export const DiscordExportModal: React.FC<DiscordExportModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg font-bold">
             <MessageSquare className="w-5 h-5 text-[#5865F2]" />
             Export Summary for Discord
           </DialogTitle>
-          <DialogDescription className="text-xs sm:text-sm">
+          <DialogDescription className="text-xs font-medium text-muted-foreground mt-0.5">
             Copy and paste this into your Discord server or group chat. Each member will see their exact local time listed!
           </DialogDescription>
         </DialogHeader>
 
         {/* Discord Preview Box */}
-        <div className="rounded-xl border border-border/80 bg-[#1e1f22] p-4 text-xs sm:text-sm font-mono text-neutral-200 overflow-x-auto max-h-[300px] whitespace-pre-wrap selection:bg-[#5865F2]/40">
+        <div className="rounded-md border border-border bg-[#1e1f22] p-4 text-xs font-mono text-neutral-200 overflow-x-auto max-h-[300px] whitespace-pre-wrap selection:bg-[#5865F2]/40">
           {discordText}
         </div>
 

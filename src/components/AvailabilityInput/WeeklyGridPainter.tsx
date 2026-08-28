@@ -112,23 +112,23 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {/* Sleek Minimalist Status Strip */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 rounded-xl border border-border bg-card/80 backdrop-blur-sm shadow-xs text-xs sm:text-sm">
-        <div className="flex items-center gap-2 font-semibold">
-          <Sparkles className="w-4 h-4 text-primary" />
+      {/* Minimalist Status & Guide Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs sm:text-sm text-muted-foreground font-medium">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
           <span>
-            <strong className="text-foreground font-bold">{totalHoursSelected} hrs</strong> selected
+            <strong className="font-mono text-foreground font-bold px-1.5 py-0.5 rounded-sm bg-muted/60 border border-border/80">{totalHoursSelected} hrs</strong> selected
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <MousePointerClick className="w-3.5 h-3.5 text-primary" />
           <span>Click or drag across the grid to toggle hours</span>
         </div>
       </div>
 
       {/* 7-Day Interactive Grid (Full 24-Hour Day) */}
-      <div className="border border-border rounded-lg bg-card shadow-xs overflow-hidden">
+      <div className="border border-border rounded-md bg-card shadow-xs overflow-hidden">
         <div
           ref={gridContainerRef}
           onTouchMove={handleTouchMove}
@@ -138,88 +138,88 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
           <div className="min-w-[680px]">
             {/* Day Headers (Sticky Top) */}
             <div className="grid grid-cols-[100px_repeat(7,1fr)] sticky top-0 z-20 bg-card border-b border-border text-sm font-semibold">
-            <div className="p-3 text-center text-muted-foreground border-r border-border/60 flex items-center justify-center bg-card">
-              Time
-            </div>
-            {DAYS_OF_WEEK.map((day) => (
-              <div
-                key={day.index}
-                className={`p-3 text-center border-r border-border/60 last:border-r-0 ${
-                  day.isWeekend ? 'bg-primary/5 text-primary' : 'text-foreground'
-                }`}
-              >
-                <div className="font-bold text-sm tracking-tight whitespace-nowrap">{day.shortName}</div>
-                <div className="text-[11px] font-medium text-muted-foreground whitespace-nowrap">
-                  {day.isWeekend ? 'Weekend' : 'Weekday'}
-                </div>
+              <div className="p-3 text-center text-muted-foreground border-r border-border/60 flex items-center justify-center bg-card font-mono text-xs uppercase tracking-wider">
+                Time
               </div>
-            ))}
-          </div>
-
-          {/* Hour & Half-Hour Rows */}
-          <div className="divide-y divide-border/40">
-            {Array.from({ length: HOURS_PER_DAY }).map((_, hour) => {
-              const topSlot = hour * SLOTS_PER_HOUR;
-              const bottomSlot = topSlot + 1;
-              const timeLabel = formatSlotTime(topSlot, timeFormat);
-
-              return (
-                <div key={hour} className="grid grid-cols-[100px_repeat(7,1fr)] group hover:bg-muted/10">
-                  {/* Time label column */}
-                  <div className="p-2 text-center text-xs sm:text-sm font-mono font-medium text-muted-foreground tabular-nums whitespace-nowrap border-r border-border/60 flex items-center justify-center bg-card">
-                    {timeLabel}
+              {DAYS_OF_WEEK.map((day) => (
+                <div
+                  key={day.index}
+                  className={`p-2.5 text-center border-r border-border/60 last:border-r-0 ${
+                    day.isWeekend ? 'bg-primary/5 text-primary' : 'text-foreground'
+                  }`}
+                >
+                  <div className="font-bold text-sm tracking-tight whitespace-nowrap">{day.shortName}</div>
+                  <div className="font-mono text-[10px] font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                    {day.isWeekend ? 'Weekend' : 'Weekday'}
                   </div>
-
-                  {/* 7 Days Columns for this hour */}
-                  {DAYS_OF_WEEK.map((day) => {
-                    const topKey = `${day.index}-${topSlot}`;
-                    const bottomKey = `${day.index}-${bottomSlot}`;
-                    const isTopActive = activeLocalSlots.has(topKey);
-                    const isBottomActive = activeLocalSlots.has(bottomKey);
-
-                    return (
-                      <div
-                        key={day.index}
-                        className={`border-r border-border/40 last:border-r-0 flex flex-col ${
-                          day.isWeekend ? 'bg-primary/[0.02]' : ''
-                        }`}
-                      >
-                        {/* Top 30-min slot (:00) */}
-                        <div
-                          data-day={day.index}
-                          data-slot={topSlot}
-                          onMouseDown={() => handleMouseDown(day.index, topSlot)}
-                          onMouseEnter={() => handleMouseEnter(day.index, topSlot)}
-                          title={`${day.name} ${formatSlotTime(topSlot, timeFormat)}`}
-                          className={`h-6 border-b border-border/20 cursor-pointer ${
-                            isTopActive
-                              ? 'bg-primary text-primary-foreground font-semibold shadow-inner'
-                              : 'hover:bg-primary/20'
-                          }`}
-                        />
-
-                        {/* Bottom 30-min slot (:30) */}
-                        <div
-                          data-day={day.index}
-                          data-slot={bottomSlot}
-                          onMouseDown={() => handleMouseDown(day.index, bottomSlot)}
-                          onMouseEnter={() => handleMouseEnter(day.index, bottomSlot)}
-                          title={`${day.name} ${formatSlotTime(bottomSlot, timeFormat)}`}
-                          className={`h-6 cursor-pointer ${
-                            isBottomActive
-                              ? 'bg-primary text-primary-foreground font-semibold shadow-inner'
-                              : 'hover:bg-primary/20'
-                          }`}
-                        />
-                      </div>
-                    );
-                  })}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Hour & Half-Hour Rows */}
+            <div className="divide-y divide-border/40">
+              {Array.from({ length: HOURS_PER_DAY }).map((_, hour) => {
+                const topSlot = hour * SLOTS_PER_HOUR;
+                const bottomSlot = topSlot + 1;
+                const timeLabel = formatSlotTime(topSlot, timeFormat);
+
+                return (
+                  <div key={hour} className="grid grid-cols-[100px_repeat(7,1fr)] group hover:bg-muted/10">
+                    {/* Time label column */}
+                    <div className="p-2 text-center text-xs font-mono font-semibold text-muted-foreground tabular-nums whitespace-nowrap border-r border-border/60 flex items-center justify-center bg-card">
+                      {timeLabel}
+                    </div>
+
+                    {/* 7 Days Columns for this hour */}
+                    {DAYS_OF_WEEK.map((day) => {
+                      const topKey = `${day.index}-${topSlot}`;
+                      const bottomKey = `${day.index}-${bottomSlot}`;
+                      const isTopActive = activeLocalSlots.has(topKey);
+                      const isBottomActive = activeLocalSlots.has(bottomKey);
+
+                      return (
+                        <div
+                          key={day.index}
+                          className={`border-r border-border/40 last:border-r-0 flex flex-col ${
+                            day.isWeekend ? 'bg-primary/[0.02]' : ''
+                          }`}
+                        >
+                          {/* Top 30-min slot (:00) */}
+                          <div
+                            data-day={day.index}
+                            data-slot={topSlot}
+                            onMouseDown={() => handleMouseDown(day.index, topSlot)}
+                            onMouseEnter={() => handleMouseEnter(day.index, topSlot)}
+                            title={`${day.name} ${formatSlotTime(topSlot, timeFormat)}`}
+                            className={`h-6 border-b border-border/20 cursor-pointer transition-colors ${
+                              isTopActive
+                                ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                                : 'hover:bg-primary/25'
+                            }`}
+                          />
+
+                          {/* Bottom 30-min slot (:30) */}
+                          <div
+                            data-day={day.index}
+                            data-slot={bottomSlot}
+                            onMouseDown={() => handleMouseDown(day.index, bottomSlot)}
+                            onMouseEnter={() => handleMouseEnter(day.index, bottomSlot)}
+                            title={`${day.name} ${formatSlotTime(bottomSlot, timeFormat)}`}
+                            className={`h-6 cursor-pointer transition-colors ${
+                              isBottomActive
+                                ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                                : 'hover:bg-primary/25'
+                            }`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </div>
   );

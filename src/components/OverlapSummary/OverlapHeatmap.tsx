@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DAYS_OF_WEEK, HOURS_PER_DAY, SLOTS_PER_HOUR, TOTAL_SLOTS_PER_WEEK, SLOTS_PER_DAY } from '../../lib/constants';
 import { formatSlotTime } from '../../lib/timezone';
 import { computeHeatmapMatrix } from '../../lib/overlap';
@@ -96,42 +97,54 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
   return (
     <Card className="border border-border bg-card shadow-sm rounded-lg relative overflow-hidden transition-all">
       <CardHeader 
-        className="p-5 sm:p-6 cursor-pointer hover:bg-muted/30 transition-colors select-none flex flex-row items-center justify-between border-b border-border/40"
+        className="p-5 sm:p-6 cursor-pointer hover:bg-muted/30 transition-colors select-none flex flex-row items-center justify-between"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <div className="flex items-center gap-3">
-          <Layers className="w-5 h-5 text-primary" />
+          <div className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Layers className="w-4 h-4" />
+          </div>
           <div>
             <CardTitle className="text-lg font-bold tracking-tight text-foreground">
               Group Availability Chart
             </CardTitle>
-            {!isCollapsed && (
-              <CardDescription className="text-sm font-medium text-muted-foreground mt-1">
-                See the exact schedule overlaps for your group (in your timezone).
-              </CardDescription>
-            )}
+            <CardDescription className="text-sm font-medium text-muted-foreground mt-0.5">
+              See the exact schedule overlaps for your group (in your timezone).
+            </CardDescription>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          {!isCollapsed && (
-            <div className="hidden sm:flex items-center gap-3 text-xs font-bold tracking-tight text-muted-foreground mr-2">
-              <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded-sm bg-neutral-300 dark:bg-neutral-600 opacity-80" />
-                <span>Some Free</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded-sm bg-emerald-500 shadow-xs" />
-                <span className="text-foreground">Match ({Math.round(minRatioFilter * 100)}%+)</span>
-              </div>
+          <div className="hidden sm:flex items-center gap-3 text-xs font-bold tracking-tight text-muted-foreground mr-2">
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 rounded-sm bg-neutral-300 dark:bg-neutral-600 opacity-80" />
+              <span>Some Free</span>
             </div>
-          )}
-          <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isCollapsed ? '' : 'rotate-90'}`} />
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 rounded-sm bg-emerald-500 shadow-xs" />
+              <span className="text-foreground">Match ({Math.round(minRatioFilter * 100)}%+)</span>
+            </div>
+          </div>
+          <motion.div
+            animate={{ rotate: isCollapsed ? 0 : 90 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </motion.div>
         </div>
       </CardHeader>
 
-      {!isCollapsed && (
-        <CardContent className="p-6 sm:p-7 pt-6">
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.div
+            key="heatmap-content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <CardContent className="p-6 sm:p-7 pt-6">
         <div className="border border-border rounded-lg bg-card shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <div className="min-w-[680px]">
@@ -232,31 +245,34 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
               pointerEvents: 'none',
               zIndex: 9999,
             }}
-            className="p-3 max-w-xs rounded-xl bg-popover/95 text-popover-foreground border border-border shadow-xl backdrop-blur-md space-y-1.5 text-xs sm:text-sm animate-in fade-in-50 duration-75"
+            className="p-3 max-w-xs rounded-md bg-popover text-popover-foreground border border-border shadow-xl space-y-1.5 text-xs animate-in fade-in-50 duration-75"
           >
-            <div className="font-semibold text-foreground text-sm">
-              {hoverInfo.dayName} {hoverInfo.timeLabel}
+            <div className="font-bold text-foreground text-sm flex items-center justify-between gap-2">
+              <span>{hoverInfo.dayName}</span>
+              <span className="font-mono text-xs font-semibold text-muted-foreground">{hoverInfo.timeLabel}</span>
             </div>
-            <div className="text-xs sm:text-sm font-semibold text-primary">
-              {hoverInfo.count} of {totalMembers} members available ({Math.round(hoverInfo.ratio * 100)}%)
+            <div className="font-mono text-xs font-bold text-primary">
+              {hoverInfo.count}/{totalMembers} Members Free ({Math.round(hoverInfo.ratio * 100)}%)
             </div>
             {hoverInfo.availableMembers.length > 0 && (
-              <div className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 font-medium flex items-start gap-1.5">
-                <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
-                <span>Available: {hoverInfo.availableMembers.map((m) => m.name).join(', ')}</span>
+              <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-start gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                <span>Free: {hoverInfo.availableMembers.map((m) => m.name).join(', ')}</span>
               </div>
             )}
             {hoverInfo.unavailableMembers.length > 0 && (
-              <div className="text-xs sm:text-sm text-rose-600 dark:text-rose-400 font-medium flex items-start gap-1.5">
-                <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              <div className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-start gap-1.5">
+                <XCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                 <span>Busy: {hoverInfo.unavailableMembers.map((m) => m.name).join(', ')}</span>
               </div>
             )}
           </div>
         )}
       </CardContent>
-      )}
-    </Card>
+    </motion.div>
+  )}
+</AnimatePresence>
+</Card>
   );
 });
 OverlapHeatmap.displayName = 'OverlapHeatmap';

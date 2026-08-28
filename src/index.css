@@ -69,11 +69,11 @@
     --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 16%;         /* #292929 - Crisp Graphite Border */
-    --input: 0 0% 10%;
+    --border: 0 0% 20%;         /* #333333 - Crisp Graphite Border */
+    --input: 0 0% 25%;          /* #404040 - High-Contrast Input & Dropdown Border */
     --ring: 6 78% 62%;
     
-    --radius: 0.75rem;
+    --radius: 0.5rem;
   }
 
   body {
@@ -115,9 +115,9 @@
   }
 }
 
-/* Atmospheric Ambient Background Bloom - Dark Mode Only */
+/* Atmospheric Ambient Background Bloom */
 .dark body {
-  background-image: radial-gradient(ellipse 70% 50% at 15% -10%, rgba(234, 88, 12, 0.12), transparent 70%);
+  background-image: radial-gradient(ellipse 70% 40% at 50% -5%, rgba(239, 100, 83, 0.09), transparent 60%);
   background-attachment: fixed;
 }
 
