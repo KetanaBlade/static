@@ -79,7 +79,7 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
               value={selectedDay}
               onChange={(e) => setSelectedDay(Number(e.target.value))}
               aria-label="Select day of week"
-              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer"
+              className="w-full h-11 px-3.5 rounded-lg border border-border bg-card text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer"
             >
               {DAYS_OF_WEEK.map((day) => (
                 <option key={day.index} value={day.index}>
@@ -102,7 +102,7 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
                 }
               }}
               aria-label="Select start time"
-              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 tabular-nums shadow-xs cursor-pointer"
+              className="w-full h-11 px-3.5 rounded-lg border border-border bg-card text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 tabular-nums shadow-xs cursor-pointer"
             >
               {timeOptions.slice(0, 48).map((opt) => (
                 <option key={opt.slot} value={opt.slot}>
@@ -119,7 +119,7 @@ export const RangeBuilder: React.FC<RangeBuilderProps> = ({
               value={endSlotInDay}
               onChange={(e) => setEndSlotInDay(Number(e.target.value))}
               aria-label="Select end time"
-              className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 tabular-nums shadow-xs cursor-pointer"
+              className="w-full h-11 px-3.5 rounded-lg border border-border bg-card text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 tabular-nums shadow-xs cursor-pointer"
             >
               {timeOptions.filter((opt) => opt.slot > startSlotInDay).map((opt) => (
                 <option key={opt.slot} value={opt.slot}>

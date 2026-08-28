@@ -21,29 +21,49 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   const [drawMode, setDrawMode] = useState<'select' | 'erase'>('select');
   const gridContainerRef = useRef<HTMLDivElement>(null);
 
-  // Set of active local slots for fast lookup: key = `${dayIndex}-${slotInDay}`
+  const localSlotsRef = useRef<Set<number>>(new Set(currentSlots));
+  const [localRender, setLocalRender] = useState(0); // Forces local UI updates during drag
+
+  // Sync ref from parent when NOT drawing
+  React.useEffect(() => {
+    if (!isDrawing) {
+      localSlotsRef.current = new Set(currentSlots);
+      setLocalRender(r => r + 1); // Ensure local UI matches new parent state
+    }
+  }, [currentSlots, isDrawing]);
+
+  // Set of active local slots for fast O(1) lookup during render
   const activeLocalSlots = React.useMemo(() => {
     const set = new Set<string>();
-    for (const slot of currentSlots) {
+    for (const slot of localSlotsRef.current) {
       const { dayIndex, slotInDay } = utcToLocalSlot(slot, timezone);
       set.add(`${dayIndex}-${slotInDay}`);
     }
     return set;
-  }, [currentSlots, timezone]);
+  }, [timezone, localRender]); // Recomputes instantly on localRender
 
   const toggleSlot = useCallback(
     (dayIndex: number, slotInDay: number, forceMode?: 'select' | 'erase') => {
       const utcSlot = localToUtcSlot(dayIndex, slotInDay, timezone);
-      const isAlreadyActive = currentSlots.includes(utcSlot);
+      const isAlreadyActive = localSlotsRef.current.has(utcSlot);
       const mode = forceMode || (isAlreadyActive ? 'erase' : 'select');
 
+      let changed = false;
       if (mode === 'select' && !isAlreadyActive) {
-        onSlotsChange([...currentSlots, utcSlot].sort((a, b) => a - b));
+        localSlotsRef.current.add(utcSlot);
+        changed = true;
       } else if (mode === 'erase' && isAlreadyActive) {
-        onSlotsChange(currentSlots.filter((s) => s !== utcSlot));
+        localSlotsRef.current.delete(utcSlot);
+        changed = true;
+      }
+
+      if (changed) {
+        // FAST LOCAL UPDATE ONLY: Do NOT call onSlotsChange here!
+        // This prevents the main thread from blocking on App-level reconciliations during a fast drag.
+        setLocalRender(r => r + 1);
       }
     },
-    [currentSlots, onSlotsChange, timezone]
+    [timezone]
   );
 
   const handleMouseDown = (dayIndex: number, slotInDay: number) => {
@@ -61,7 +81,11 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   };
 
   const handleMouseUp = () => {
-    setIsDrawing(false);
+    if (isDrawing) {
+      setIsDrawing(false);
+      // Now that the drag is over, dispatch the fully accumulated array to the parent to save/sync
+      onSlotsChange(Array.from(localSlotsRef.current).sort((a, b) => a - b));
+    }
   };
 
   // Touch support for mobile dragging
@@ -80,7 +104,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
     }
   };
 
-  const totalHoursSelected = (currentSlots.length * 0.5).toFixed(1);
+  const totalHoursSelected = (localSlotsRef.current.size * 0.5).toFixed(1);
 
   return (
     <div
@@ -104,16 +128,17 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
       </div>
 
       {/* 7-Day Interactive Grid (Full 24-Hour Day) */}
-      <div
-        ref={gridContainerRef}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleMouseUp}
-        className="overflow-x-auto border border-border rounded-2xl bg-card shadow-xs"
-      >
-        <div className="min-w-[680px]">
-          {/* Day Headers (Sticky Top) */}
-          <div className="grid grid-cols-[80px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-md border-b border-border text-sm font-semibold">
-            <div className="p-3 text-center text-muted-foreground border-r border-border/60">
+      <div className="border border-border rounded-lg bg-card shadow-xs overflow-hidden">
+        <div
+          ref={gridContainerRef}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleMouseUp}
+          className="overflow-x-auto"
+        >
+          <div className="min-w-[680px]">
+            {/* Day Headers (Sticky Top) */}
+            <div className="grid grid-cols-[100px_repeat(7,1fr)] sticky top-0 z-20 bg-card border-b border-border text-sm font-semibold">
+            <div className="p-3 text-center text-muted-foreground border-r border-border/60 flex items-center justify-center bg-card">
               Time
             </div>
             {DAYS_OF_WEEK.map((day) => (
@@ -123,8 +148,8 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                   day.isWeekend ? 'bg-primary/5 text-primary' : 'text-foreground'
                 }`}
               >
-                <div className="font-bold text-sm tracking-tight">{day.shortName}</div>
-                <div className="text-[11px] font-medium text-muted-foreground">
+                <div className="font-bold text-sm tracking-tight whitespace-nowrap">{day.shortName}</div>
+                <div className="text-[11px] font-medium text-muted-foreground whitespace-nowrap">
                   {day.isWeekend ? 'Weekend' : 'Weekday'}
                 </div>
               </div>
@@ -139,9 +164,9 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
               const timeLabel = formatSlotTime(topSlot, timeFormat);
 
               return (
-                <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] group hover:bg-muted/10">
+                <div key={hour} className="grid grid-cols-[100px_repeat(7,1fr)] group hover:bg-muted/10">
                   {/* Time label column */}
-                  <div className="p-2 text-center text-xs sm:text-sm font-mono font-medium text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
+                  <div className="p-2 text-center text-xs sm:text-sm font-mono font-medium text-muted-foreground tabular-nums whitespace-nowrap border-r border-border/60 flex items-center justify-center bg-card">
                     {timeLabel}
                   </div>
 
@@ -166,7 +191,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                           onMouseDown={() => handleMouseDown(day.index, topSlot)}
                           onMouseEnter={() => handleMouseEnter(day.index, topSlot)}
                           title={`${day.name} ${formatSlotTime(topSlot, timeFormat)}`}
-                          className={`h-6 border-b border-border/20 cursor-pointer transition-colors ${
+                          className={`h-6 border-b border-border/20 cursor-pointer ${
                             isTopActive
                               ? 'bg-primary text-primary-foreground font-semibold shadow-inner'
                               : 'hover:bg-primary/20'
@@ -180,7 +205,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                           onMouseDown={() => handleMouseDown(day.index, bottomSlot)}
                           onMouseEnter={() => handleMouseEnter(day.index, bottomSlot)}
                           title={`${day.name} ${formatSlotTime(bottomSlot, timeFormat)}`}
-                          className={`h-6 cursor-pointer transition-colors ${
+                          className={`h-6 cursor-pointer ${
                             isBottomActive
                               ? 'bg-primary text-primary-foreground font-semibold shadow-inner'
                               : 'hover:bg-primary/20'
@@ -194,6 +219,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
             })}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

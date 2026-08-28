@@ -4,7 +4,7 @@ import { formatSlotTime } from '../../lib/timezone';
 import { computeHeatmapMatrix } from '../../lib/overlap';
 import { GroupMember } from '../../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { Layers, CheckCircle2, XCircle } from 'lucide-react';
+import { Layers, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 
 interface OverlapHeatmapProps {
   members: GroupMember[];
@@ -65,8 +65,10 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
 
     if (count === 0 || ratio === 0) return 'bg-transparent hover:bg-muted/40';
     if (ratio >= minRatioFilter) return 'bg-emerald-500 text-emerald-950 font-bold shadow-xs';
-    return 'bg-muted text-muted-foreground opacity-60'; // Gray for selected but non-overlapping
+    return 'bg-neutral-300 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300 opacity-80'; // Darker gray for selected but non-overlapping
   }, [highlightedMemberId, minRatioFilter]);
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleCellMouseEnter = (
     e: React.MouseEvent<HTMLDivElement>,
@@ -92,39 +94,50 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
   };
 
   return (
-    <Card className="border border-border bg-card shadow-sm rounded-lg relative">
-      <CardHeader className="p-6 pb-4 border-b border-border/40 bg-muted/20">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <Card className="border border-border bg-card shadow-sm rounded-lg relative overflow-hidden transition-all">
+      <CardHeader 
+        className="p-5 sm:p-6 cursor-pointer hover:bg-muted/30 transition-colors select-none flex flex-row items-center justify-between border-b border-border/40"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <div className="flex items-center gap-3">
+          <Layers className="w-5 h-5 text-primary" />
           <div>
-            <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Layers className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg font-bold tracking-tight text-foreground">
               Group Availability Chart
             </CardTitle>
-            <CardDescription className="text-sm font-medium text-muted-foreground mt-1.5">
-              See the exact schedule overlaps for your group (in your timezone).
-            </CardDescription>
+            {!isCollapsed && (
+              <CardDescription className="text-sm font-medium text-muted-foreground mt-1">
+                See the exact schedule overlaps for your group (in your timezone).
+              </CardDescription>
+            )}
           </div>
+        </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-3 text-xs font-bold tracking-tight text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-4 rounded-sm bg-muted opacity-60" />
-              <span>Some Free</span>
+        <div className="flex items-center gap-4">
+          {!isCollapsed && (
+            <div className="hidden sm:flex items-center gap-3 text-xs font-bold tracking-tight text-muted-foreground mr-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-4 rounded-sm bg-neutral-300 dark:bg-neutral-600 opacity-80" />
+                <span>Some Free</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-4 rounded-sm bg-emerald-500 shadow-xs" />
+                <span className="text-foreground">Match ({Math.round(minRatioFilter * 100)}%+)</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-4 rounded-sm bg-emerald-500 shadow-xs" />
-              <span className="text-foreground">Match ({Math.round(minRatioFilter * 100)}%+)</span>
-            </div>
-          </div>
+          )}
+          <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isCollapsed ? '' : 'rotate-90'}`} />
         </div>
       </CardHeader>
 
-      <CardContent className="p-6 sm:p-7 pt-0">
-        <div className="overflow-x-auto border border-border rounded-2xl bg-card shadow-xs">
-          <div className="min-w-[680px]">
-            {/* Sticky Day Headers */}
-            <div className="grid grid-cols-[80px_repeat(7,1fr)] sticky top-0 z-20 bg-card/95 backdrop-blur-md border-b border-border text-sm font-semibold">
-              <div className="p-3 text-center text-muted-foreground border-r border-border/60">
+      {!isCollapsed && (
+        <CardContent className="p-6 sm:p-7 pt-6">
+        <div className="border border-border rounded-lg bg-card shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <div className="min-w-[680px]">
+              {/* Sticky Day Headers */}
+            <div className="grid grid-cols-[100px_repeat(7,1fr)] sticky top-0 z-20 bg-card border-b border-border text-sm font-semibold">
+              <div className="p-3 text-center text-muted-foreground border-r border-border/60 flex items-center justify-center bg-card">
                 Time
               </div>
               {DAYS_OF_WEEK.map((day) => (
@@ -134,7 +147,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
                     day.isWeekend ? 'bg-primary/5 text-primary font-semibold' : 'text-foreground'
                   }`}
                 >
-                  <div className="font-semibold text-sm">{day.shortName}</div>
+                  <div className="font-bold text-sm tracking-tight whitespace-nowrap">{day.shortName}</div>
                 </div>
               ))}
             </div>
@@ -148,9 +161,9 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
                 const bottomTimeLabel = formatSlotTime(bottomSlotInDay, timeFormat);
 
                 return (
-                  <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] group hover:bg-muted/10">
+                  <div key={hour} className="grid grid-cols-[100px_repeat(7,1fr)] group hover:bg-muted/10">
                     {/* Time Column */}
-                    <div className="p-2 text-center text-xs sm:text-sm font-mono font-medium text-muted-foreground tabular-nums border-r border-border/60 flex items-center justify-center bg-card">
+                    <div className="p-2 text-center text-xs sm:text-sm font-mono font-medium text-muted-foreground tabular-nums whitespace-nowrap border-r border-border/60 flex items-center justify-center bg-card">
                       {timeLabel}
                     </div>
 
@@ -180,7 +193,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
                           <div
                             onMouseEnter={(e) => handleCellMouseEnter(e, day.name, timeLabel, topData)}
                             onMouseLeave={handleCellMouseLeave}
-                            className={`h-6 border-b border-border/20 cursor-pointer transition-colors ${getCellColorClass(
+                            className={`h-6 border-b border-border/20 cursor-pointer ${getCellColorClass(
                               topData.ratio,
                               topData.count,
                               isTopHighlightedAvailable
@@ -191,7 +204,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
                           <div
                             onMouseEnter={(e) => handleCellMouseEnter(e, day.name, bottomTimeLabel, bottomData)}
                             onMouseLeave={handleCellMouseLeave}
-                            className={`h-6 cursor-pointer transition-colors ${getCellColorClass(
+                            className={`h-6 cursor-pointer ${getCellColorClass(
                               bottomData.ratio,
                               bottomData.count,
                               isBottomHighlightedAvailable
@@ -205,6 +218,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
               })}
             </div>
           </div>
+        </div>
         </div>
 
         {/* Ultra-performant Single Floating Tooltip */}
@@ -241,6 +255,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
           </div>
         )}
       </CardContent>
+      )}
     </Card>
   );
 });

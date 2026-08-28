@@ -3,7 +3,7 @@ import { QUICK_PRESETS } from '../../lib/constants';
 import { timeRangesToUtcSlots } from '../../lib/timezone';
 import { SlotIndex } from '../../types';
 import { Button } from '../ui/button';
-import { Sparkles, Trash2 } from 'lucide-react';
+import { Sparkles, Trash2, Plus } from 'lucide-react';
 
 interface QuickPresetsProps {
   timezone: string;
@@ -57,12 +57,12 @@ export const QuickPresets: React.FC<QuickPresetsProps> = ({
           <Button
             key={preset.id}
             variant="outline"
-            size="sm"
+            size="default"
             onClick={() => handleApplyPreset(preset.id)}
-            className="h-10 text-sm rounded-xl border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left font-semibold shadow-xs px-4 cursor-pointer"
+            className="min-h-[44px] text-sm sm:text-base rounded-xl transition-all text-left font-semibold px-4 cursor-pointer flex items-center gap-1.5"
             title={preset.description}
           >
-            <span className="text-primary font-bold mr-1.5">+</span>
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-primary" strokeWidth={3} />
             {preset.label}
           </Button>
         ))}

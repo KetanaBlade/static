@@ -50,7 +50,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
           </div>
           <h4 className="text-lg font-semibold text-foreground">No Overlapping Windows Found</h4>
           <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
-            Try adjusting the attendance threshold (e.g. to 75%+) or minimum length above to see partial overlaps!
+            Try adjusting the "Who's Free" filter (e.g. to Most 75%+) or minimum duration above to see partial overlaps!
           </p>
         </CardContent>
       </Card>
@@ -130,7 +130,7 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                     size="sm"
                     onClick={() => handleCopyDiscord(win)}
                     title="Copy formatted Discord timestamp (**Day:** <t:unix:t> – <t:unix:t>)"
-                    className="h-10 px-4 text-sm font-semibold border-border bg-background shadow-xs hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 cursor-pointer"
+                    className="h-10 px-4 text-sm font-semibold hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 cursor-pointer"
                   >
                     {isDiscordCopied ? (
                       <>

@@ -54,10 +54,10 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
-      fontFamily: {
-        sans: ['Space Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-      },
+    },
+    fontFamily: {
+      sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+      mono: ['"JetBrains Mono"', 'monospace'],
     },
   },
   plugins: [],

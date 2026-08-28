@@ -1,53 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  code, kbd, samp, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
   :root {
-    /* Solarized Light Theme (Ethan Schoonover Palette) */
-    --background: 44 87% 94%;   /* #FDF6E3 (Base3) */
-    --foreground: 196 13% 40%;  /* #586E75 (Base01) slightly darker for contrast */
-    --card: 46 42% 88%;         /* #EEE8D5 (Base2) */
-    --card-foreground: 196 13% 40%;
-    --popover: 46 42% 88%;
-    --popover-foreground: 196 13% 40%;
-    --primary: 18 80% 44%;      /* #CB4B16 (Orange) */
-    --primary-foreground: 44 87% 94%;
-    --secondary: 44 20% 85%;
-    --secondary-foreground: 196 13% 40%;
-    --muted: 46 42% 85%;
-    --muted-foreground: 194 14% 45%;
-    --accent: 46 42% 82%;
-    --accent-foreground: 196 13% 40%;
-    --destructive: 1 71% 52%;   /* #DC322F (Red) */
-    --destructive-foreground: 44 87% 94%;
-    --border: 46 30% 80%;       /* Crisp borders */
-    --input: 46 30% 80%;
-    --ring: 18 80% 44%;
-    --radius: 0.375rem;         /* Sharper, more technical corners */
+    /* Solarized Light Background */
+    --background: 44 87% 94%;   /* #FDF6E3 - Classic Solarized Base3 */
+    --foreground: 24 10% 15%;   
+    
+    /* Clean, extremely subtle off-white for cards (no brown tint) */
+    --card: 40 30% 98%;         /* #FCFBF8 - Clean bright off-white */
+    --card-foreground: 24 10% 15%;
+    
+    --popover: 40 30% 98%;
+    --popover-foreground: 24 10% 15%;
+    
+    /* WCAG AA Accessible Primary Orange/Peach */
+    --primary: 15 85% 45%;      /* #D44E18 */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 44 30% 90%;
+    --secondary-foreground: 24 10% 25%;
+    --muted: 44 20% 92%;
+    --muted-foreground: 24 10% 45%;
+    --accent: 44 30% 90%;
+    --accent-foreground: 24 10% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 44 20% 86%;
+    --input: 44 20% 86%;
+    --ring: 15 85% 45%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    /* Modern Dark Theme with Vibrant Orange Accents */
-    --background: 220 13% 6%;   /* #0E1015 Deep Obsidian */
-    --foreground: 220 10% 90%;  /* #E3E5E8 Crisp Off-White */
-    --card: 220 13% 9%;         /* #14161C Slate Glass */
-    --card-foreground: 220 10% 90%;
-    --popover: 220 13% 9%;
-    --popover-foreground: 220 10% 90%;
-    --primary: 25 95% 53%;      /* #EA580C Vibrant Pure Orange */
+    /* Accessible Dark Theme with Red/Peach accents */
+    --background: 220 15% 10%;  /* #15181E - Accessible dark */
+    --foreground: 40 10% 92%;   /* Warm off-white text */
+    
+    --card: 220 15% 13%;        /* Lifted card color */
+    --card-foreground: 40 10% 92%;
+    
+    --popover: 220 15% 13%;
+    --popover-foreground: 40 10% 92%;
+    
+    --primary: 6 78% 62%;       /* #EF6453 - Dark Peach / Coral Red */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 13% 13%;
-    --secondary-foreground: 220 10% 90%;
-    --muted: 220 13% 13%;
+    
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 40 10% 92%;
+    
+    --muted: 220 15% 18%;
     --muted-foreground: 220 10% 65%;
-    --accent: 220 13% 16%;
-    --accent-foreground: 220 10% 90%;
-    --destructive: 0 84% 60%;
+    
+    --accent: 220 15% 22%;
+    --accent-foreground: 40 10% 92%;
+    
+    --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 18%;      /* Crisp thin borders */
-    --input: 220 13% 18%;
-    --ring: 25 95% 53%;
+    
+    --border: 220 15% 22%;
+    --input: 220 15% 22%;
+    --ring: 6 78% 62%;
+    
+    --radius: 0.75rem;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Depth Layer: Light Mode Acoustic Concentric Texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -2;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cg fill='none' stroke='%23D44E18' stroke-width='1'%3E%3Ccircle cx='820' cy='140' r='20' stroke-opacity='0.26'/%3E%3Ccircle cx='820' cy='140' r='42' stroke-opacity='0.24'/%3E%3Ccircle cx='820' cy='140' r='68' stroke-opacity='0.22'/%3E%3Ccircle cx='820' cy='140' r='98' stroke-opacity='0.20'/%3E%3Ccircle cx='820' cy='140' r='132' stroke-opacity='0.18'/%3E%3Ccircle cx='820' cy='140' r='170' stroke-opacity='0.16'/%3E%3Ccircle cx='820' cy='140' r='214' stroke-opacity='0.14'/%3E%3Ccircle cx='820' cy='140' r='264' stroke-opacity='0.13'/%3E%3Ccircle cx='820' cy='140' r='320' stroke-opacity='0.11'/%3E%3Ccircle cx='820' cy='140' r='384' stroke-opacity='0.10'/%3E%3Ccircle cx='820' cy='140' r='456' stroke-opacity='0.08'/%3E%3Ccircle cx='820' cy='140' r='536' stroke-opacity='0.07'/%3E%3Ccircle cx='820' cy='140' r='626' stroke-opacity='0.06'/%3E%3Ccircle cx='820' cy='140' r='726' stroke-opacity='0.05'/%3E%3Ccircle cx='820' cy='140' r='836' stroke-opacity='0.04'/%3E%3Ccircle cx='820' cy='140' r='956' stroke-opacity='0.03'/%3E%3Ccircle cx='160' cy='780' r='24' stroke-opacity='0.24'/%3E%3Ccircle cx='160' cy='780' r='52' stroke-opacity='0.21'/%3E%3Ccircle cx='160' cy='780' r='86' stroke-opacity='0.18'/%3E%3Ccircle cx='160' cy='780' r='126' stroke-opacity='0.16'/%3E%3Ccircle cx='160' cy='780' r='174' stroke-opacity='0.14'/%3E%3Ccircle cx='160' cy='780' r='230' stroke-opacity='0.12'/%3E%3Ccircle cx='160' cy='780' r='294' stroke-opacity='0.10'/%3E%3Ccircle cx='160' cy='780' r='368' stroke-opacity='0.08'/%3E%3Ccircle cx='160' cy='780' r='452' stroke-opacity='0.07'/%3E%3Ccircle cx='160' cy='780' r='546' stroke-opacity='0.05'/%3E%3Ccircle cx='160' cy='780' r='650' stroke-opacity='0.04'/%3E%3Ccircle cx='160' cy='780' r='764' stroke-opacity='0.03'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: cover;
+    background-position: center;
+  }
+  
+  /* Depth Layer: Dark Mode Asymmetrical Abstract Lines & Diamond Nodes (No Curves) */
+  .dark body::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cg fill='none' stroke='%23EF6453' stroke-width='1.5' stroke-opacity='0.15'%3E%3Cpath d='M-200 200 L1200 800'/%3E%3Cpath d='M800 -200 L200 1200'/%3E%3Cpath d='M-100 800 L1100 500'/%3E%3Cpath d='M300 1200 L600 -100'/%3E%3Cpath d='M0 600 L1000 200'/%3E%3Cpath d='M200 50 L800 950'/%3E%3Cpath d='M470 380 L620 530 L380 620 Z' stroke-opacity='0.08'/%3E%3C/g%3E%3Cg fill='%23EF6453' fill-opacity='0.4'%3E%3Cpolygon points='470,370 480,380 470,390 460,380'/%3E%3Cpolygon points='620,520 630,530 620,540 610,530'/%3E%3Cpolygon points='380,610 390,620 380,630 370,620'/%3E%3Cpolygon points='230,380 240,390 230,400 220,390'/%3E%3Cpolygon points='750,750 760,760 750,770 740,760'/%3E%3Cpolygon points='820,270 830,280 820,290 810,280'/%3E%3Cpolygon points='100,560 110,570 100,580 90,570'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: cover;
+    background-position: center;
   }
 }
 

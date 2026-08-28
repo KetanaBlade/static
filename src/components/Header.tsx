@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from './ui/button';
 import {
   Share2,
-  MessageSquare,
   Sun,
   Moon,
   Sparkles,
@@ -15,7 +14,7 @@ interface HeaderProps {
   isDarkMode: boolean;
   onDarkModeToggle: () => void;
   onOpenShareModal: () => void;
-  onOpenDiscordModal: () => void;
+  onOpenDiscordModal?: () => void;
   onNewGroup?: () => void;
   onGoHome: () => void;
 }
@@ -26,13 +25,12 @@ export const Header: React.FC<HeaderProps> = React.memo(({
   isDarkMode,
   onDarkModeToggle,
   onOpenShareModal,
-  onOpenDiscordModal,
   onNewGroup,
   onGoHome,
 }) => {
   return (
     <header className="sticky top-0 z-30 border-b border-border/80 bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-4">
+      <div className="container mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
         {/* Static Logo & Brand - Click to Go Home */}
         <button
           type="button"
@@ -51,15 +49,15 @@ export const Header: React.FC<HeaderProps> = React.memo(({
         {/* Global Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Segmented 12h / 24h Toggle */}
-          <div className="inline-flex rounded-md border border-border bg-card p-0.5" role="group" aria-label="Clock format selector">
+          <div className="inline-flex rounded-xl border border-border bg-card p-1 shadow-xs" role="group" aria-label="Clock format selector">
             <button
               type="button"
               aria-pressed={timeFormat === '12h'}
               onClick={() => timeFormat !== '12h' && onTimeFormatToggle()}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-sm font-mono tracking-tight transition-colors cursor-pointer ${
+              className={`px-3.5 min-h-[36px] text-xs sm:text-sm font-bold rounded-lg font-mono tracking-tight transition-all cursor-pointer ${
                 timeFormat === '12h'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-xs border border-primary-foreground/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent'
               }`}
               title="12-hour AM/PM clock"
             >
@@ -69,10 +67,10 @@ export const Header: React.FC<HeaderProps> = React.memo(({
               type="button"
               aria-pressed={timeFormat === '24h'}
               onClick={() => timeFormat !== '24h' && onTimeFormatToggle()}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-sm font-mono tracking-tight transition-colors cursor-pointer ${
+              className={`px-3.5 min-h-[36px] text-xs sm:text-sm font-bold rounded-lg font-mono tracking-tight transition-all cursor-pointer ${
                 timeFormat === '24h'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-xs border border-primary-foreground/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent'
               }`}
               title="24-hour military clock"
             >
@@ -81,15 +79,15 @@ export const Header: React.FC<HeaderProps> = React.memo(({
           </div>
 
           {/* Segmented Light / Dark Mode Toggle */}
-          <div className="inline-flex rounded-md border border-border bg-card p-0.5" role="group" aria-label="Theme selector">
+          <div className="inline-flex rounded-xl border border-border bg-card p-1 shadow-xs" role="group" aria-label="Theme selector">
             <button
               type="button"
               aria-pressed={!isDarkMode}
               onClick={() => isDarkMode && onDarkModeToggle()}
-              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 min-h-[36px] text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
                 !isDarkMode
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-xs border border-primary-foreground/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent'
               }`}
               title="Switch to Light Mode"
             >
@@ -100,10 +98,10 @@ export const Header: React.FC<HeaderProps> = React.memo(({
               type="button"
               aria-pressed={isDarkMode}
               onClick={() => !isDarkMode && onDarkModeToggle()}
-              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 min-h-[36px] text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
                 isDarkMode
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-xs border border-primary-foreground/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent'
               }`}
               title="Switch to Dark Mode"
             >
@@ -111,18 +109,6 @@ export const Header: React.FC<HeaderProps> = React.memo(({
               <span className="hidden sm:inline">Dark</span>
             </button>
           </div>
-
-          {/* Export to Discord CTA */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onOpenDiscordModal}
-            className="h-8 px-3 rounded-md text-xs font-semibold tracking-tight cursor-pointer"
-          >
-            <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
-            <span className="hidden sm:inline">Discord</span>
-            <span className="sm:hidden">Export</span>
-          </Button>
 
           {/* New Group Button */}
           <Button

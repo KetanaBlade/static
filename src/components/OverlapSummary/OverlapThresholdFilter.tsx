@@ -1,7 +1,7 @@
 import React from 'react';
 import { POPULAR_TIMEZONES } from '../../lib/constants';
 import { detectUserTimezone, getTimezoneAbbreviation } from '../../lib/timezone';
-import { Filter, Clock, Globe, RotateCcw } from 'lucide-react';
+import { Users, Clock, Globe, RotateCcw } from 'lucide-react';
 
 interface OverlapThresholdFilterProps {
   viewerTimezone: string;
@@ -40,7 +40,7 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             value={viewerTimezone}
             onChange={(e) => onTimezoneChange(e.target.value)}
             aria-label="Change timezone for results"
-            className="h-10 px-3.5 rounded-lg border border-border bg-background text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer truncate max-w-[280px]"
+            className="h-10 px-3.5 rounded-lg border border-border bg-card text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-xs cursor-pointer truncate max-w-[280px]"
           >
             <option value={viewerTimezone}>
               {viewerTimezone} ({tzAbbr})
@@ -60,7 +60,7 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             type="button"
             onClick={handleAutoDetect}
             title="Auto-detect my local timezone"
-            className="h-10 px-3 rounded-lg border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground text-sm font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+            className="h-10 px-3 rounded-lg border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground text-sm font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Auto-detect</span>
@@ -70,48 +70,48 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
 
       {/* Attendance & Duration Filter Controls */}
       <div className="flex flex-wrap items-center gap-4 pt-2 lg:pt-0 border-t lg:border-t-0 border-border/60">
-        {/* Attendance Threshold Toggle */}
+        {/* Who's Free Threshold Toggle */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5 text-primary" />
-            Attendance:
+          <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5 text-primary" />
+            Who's Free:
           </span>
-          <div className="inline-flex rounded-lg border border-border bg-muted/60 p-0.5 shadow-inner" role="group" aria-label="Attendance threshold">
+          <div className="inline-flex rounded-xl border border-border bg-card p-1 shadow-xs" role="group" aria-label="Group availability filter">
             <button
               type="button"
               aria-pressed={minRatio === 1.0}
               onClick={() => onMinRatioChange(1.0)}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
                 minRatio === 1.0
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-xs border border-primary-foreground/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent'
               }`}
             >
-              100% Free
+              Everyone (100%)
             </button>
             <button
               type="button"
               aria-pressed={minRatio === 0.75}
               onClick={() => onMinRatioChange(0.75)}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
                 minRatio === 0.75
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-xs border border-primary-foreground/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent'
               }`}
             >
-              75%+
+              Most (75%+)
             </button>
             <button
               type="button"
               aria-pressed={minRatio === 0.5}
               onClick={() => onMinRatioChange(0.5)}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
                 minRatio === 0.5
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-xs border border-primary-foreground/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent'
               }`}
             >
-              All (50%+)
+              Any (50%+)
             </button>
           </div>
         </div>
@@ -126,7 +126,7 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
             value={minDurationMinutes}
             onChange={(e) => onMinDurationChange(Number(e.target.value))}
             aria-label="Select minimum window duration"
-            className="h-9 px-3 rounded-lg border border-border bg-background text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-xs cursor-pointer"
+            className="h-9 px-3 rounded-lg border border-border bg-card text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-xs cursor-pointer"
           >
             <option value={30}>30 mins+</option>
             <option value={60}>1 hour+</option>

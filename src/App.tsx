@@ -32,17 +32,16 @@ import { DiscordExportModal } from './components/ShareExport/DiscordExportModal'
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './components/ui/dialog';
-import { Sparkles, Layers, KeyRound, ArrowRight, Clock, Users, Globe, Plus } from 'lucide-react';
+import { Sparkles, Layers, KeyRound, ArrowRight, Clock, Users, Globe, Plus, ChevronRight } from 'lucide-react';
 
 export const App: React.FC = () => {
-  // Theme & Viewer settings - Persistent theme preference
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('static_theme');
       if (saved) return saved === 'dark';
-      return false; // Default to clean light mode
+      return true; // Default to dark mode
     } catch {
-      return false;
+      return true;
     }
   });
   const [viewerTimezone, setViewerTimezone] = useState<string>(detectUserTimezone());
@@ -97,6 +96,7 @@ export const App: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState<boolean>(false);
   const [isNewGroupModalOpen, setIsNewGroupModalOpen] = useState<boolean>(false);
+  const [isResultsCollapsed, setIsResultsCollapsed] = useState<boolean>(false);
   const [newGroupNameInput, setNewGroupNameInput] = useState<string>('');
   const [newGroupPinInput, setNewGroupPinInput] = useState<string>(() =>
     Math.floor(1000 + Math.random() * 9000).toString()
@@ -322,7 +322,7 @@ export const App: React.FC = () => {
     : window.location.href;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20">
+    <div className="min-h-screen flex flex-col text-foreground selection:bg-primary/20">
       {/* Navigation Header */}
       <Header
         timeFormat={timeFormat}
@@ -336,7 +336,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Content Dashboard */}
-      <main className="flex-1 container mx-auto max-w-5xl px-4 py-8">
+      <main className="flex-1 container mx-auto max-w-7xl px-4 py-8">
         {isLoadingGroup ? (
           <div className="flex flex-col items-center justify-center py-24 space-y-4">
             <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -401,7 +401,7 @@ export const App: React.FC = () => {
                       placeholder="e.g. Arcadion, Weekend Gaming, Book Club"
                       value={newGroupNameInput}
                       onChange={(e) => setNewGroupNameInput(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-md border border-input bg-background text-base font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs transition-colors"
+                      className="w-full h-11 px-3.5 rounded-md border border-input bg-card text-base font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs transition-colors"
                     />
                   </div>
 
@@ -417,7 +417,7 @@ export const App: React.FC = () => {
                       placeholder="4-digit PIN"
                       value={newGroupPinInput}
                       onChange={(e) => setNewGroupPinInput(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-md border border-input bg-background font-mono text-sm font-bold tracking-widest focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs transition-colors"
+                      className="w-full h-11 px-3.5 rounded-md border border-input bg-card font-mono text-sm font-bold tracking-widest focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs transition-colors"
                     />
                     <p className="text-xs font-medium text-muted-foreground mt-2">
                       Save this PIN to manage members from other devices.
@@ -491,6 +491,12 @@ export const App: React.FC = () => {
                 selectedMemberId={selectedFilterMemberId}
                 onSelectMember={setSelectedFilterMemberId}
                 onUnlockWithPin={handleUnlockWithPin}
+                onAddNewMember={() => {
+                  setCurrentMemberId(null);
+                  setEditingMember(undefined);
+                  saveMyMemberId(group.id, '');
+                  window.scrollTo({ top: 180, behavior: 'smooth' });
+                }}
               />
             </div>
 
@@ -505,45 +511,59 @@ export const App: React.FC = () => {
             </section>
 
             {/* SECTION 2: RESULTS & GROUP OVERLAP */}
-            <section aria-labelledby="section-results" className="space-y-6 pt-4 border-t border-border">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2.5">
-                  <Layers className="w-6 h-6 text-primary" />
-                  Group Overlap Results
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground mt-1">
-                  The optimal meeting windows where members' schedules align across timezones.
-                </p>
-              </div>
+            <section aria-labelledby="section-results" className="space-y-6 pt-4 border-t border-border/40">
+              <Card className="border border-border bg-card shadow-sm transition-all rounded-lg overflow-hidden">
+                <CardHeader 
+                  className="p-5 sm:p-6 cursor-pointer hover:bg-muted/30 transition-colors select-none flex flex-row items-center justify-between"
+                  onClick={() => setIsResultsCollapsed(!isResultsCollapsed)}
+                >
+                  <div className="flex items-center gap-3">
+                    <Layers className="w-5 h-5 text-primary" />
+                    <div>
+                      <CardTitle className="text-lg font-bold tracking-tight text-foreground">
+                        Group Overlap Results
+                      </CardTitle>
+                      {!isResultsCollapsed && (
+                        <CardDescription className="text-sm font-medium text-muted-foreground mt-1">
+                          The optimal meeting windows where members' schedules align across timezones.
+                        </CardDescription>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isResultsCollapsed ? '' : 'rotate-90'}`} />
+                </CardHeader>
 
-              {/* Filter & Threshold Bar with Timezone Selector */}
-              <OverlapThresholdFilter
-                viewerTimezone={viewerTimezone}
-                onTimezoneChange={setViewerTimezone}
-                minRatio={minRatioFilter}
-                onMinRatioChange={setMinRatioFilter}
-                minDurationMinutes={minDurationMinutes}
-                onMinDurationChange={setMinDurationMinutes}
-              />
+                {!isResultsCollapsed && (
+                  <CardContent className="p-6 border-t border-border/40 space-y-6">
+                    {/* Filter & Threshold Bar with Timezone Selector */}
+                    <OverlapThresholdFilter
+                      viewerTimezone={viewerTimezone}
+                      onTimezoneChange={setViewerTimezone}
+                      minRatio={minRatioFilter}
+                      onMinRatioChange={setMinRatioFilter}
+                      minDurationMinutes={minDurationMinutes}
+                      onMinDurationChange={setMinDurationMinutes}
+                    />
 
-              {/* Ranked Best Hangout Times (Large, Scannable Cards) */}
-              <GoldenWindowsList
-                windows={overlappingWindows}
-                groupName={group.name}
+                    {/* Ranked Best Hangout Times */}
+                    <GoldenWindowsList
+                      windows={overlappingWindows}
+                      groupName={group.name}
+                      viewerTimezone={viewerTimezone}
+                      minRatioFilter={minRatioFilter}
+                    />
+                  </CardContent>
+                )}
+              </Card>
+
+              {/* Master Visual Chart */}
+              <OverlapHeatmap
+                members={group.members}
                 viewerTimezone={viewerTimezone}
+                timeFormat={timeFormat}
+                highlightedMemberId={selectedFilterMemberId}
                 minRatioFilter={minRatioFilter}
               />
-
-              {/* Master Visual Heatmap */}
-              <div className="pt-4">
-                <OverlapHeatmap
-                  members={group.members}
-                  viewerTimezone={viewerTimezone}
-                  timeFormat={timeFormat}
-                  highlightedMemberId={selectedFilterMemberId}
-                  minRatioFilter={minRatioFilter}
-                />
-              </div>
             </section>
           </div>
         )}
@@ -596,7 +616,7 @@ export const App: React.FC = () => {
                   placeholder="e.g. Arcadion"
                   value={newGroupNameInput}
                   onChange={(e) => setNewGroupNameInput(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-card text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
 
@@ -612,7 +632,7 @@ export const App: React.FC = () => {
                   placeholder="4-digit PIN"
                   value={newGroupPinInput}
                   onChange={(e) => setNewGroupPinInput(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-background font-mono text-sm font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full h-11 px-3.5 rounded-lg border border-border bg-card font-mono text-sm font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Save this PIN to moderate members if you open the link on another device.
