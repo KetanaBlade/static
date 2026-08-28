@@ -2,7 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { DAYS_OF_WEEK, HOURS_PER_DAY, SLOTS_PER_HOUR } from '../../lib/constants';
 import { formatSlotTime, localToUtcSlot, utcToLocalSlot } from '../../lib/timezone';
 import { SlotIndex } from '../../types';
-import { Sparkles, Paintbrush, Hand } from 'lucide-react';
+import { Sparkles, Paintbrush, Hand, ArrowUp, Sun, Sunset, Moon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface WeeklyGridPainterProps {
   timezone: string;
@@ -17,6 +18,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   onSlotsChange,
   timeFormat = '12h',
 }) => {
+  const gridRootRef = useRef<HTMLDivElement>(null);
   const gridContainerRef = useRef<HTMLDivElement>(null);
 
   const localSlotsRef = useRef<Set<number>>(new Set(currentSlots));
@@ -29,9 +31,16 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   // Interaction Mode on mobile: 'paint' (drag to paint) vs 'scroll' (pan/scroll freely)
   const [touchMode, setTouchMode] = useState<'paint' | 'scroll'>('paint');
 
-  // Edge auto-scrolling refs
+  // Floating Back-to-Top visibility state
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Horizontal Edge auto-scrolling refs
   const autoScrollSpeedRef = useRef<number>(0);
   const autoScrollAnimRef = useRef<number | null>(null);
+
+  // Vertical Edge auto-scrolling refs (for drag painting across screen height)
+  const vScrollSpeedRef = useRef<number>(0);
+  const vScrollAnimRef = useRef<number | null>(null);
 
   const startAutoScroll = useCallback((speed: number) => {
     autoScrollSpeedRef.current = speed;
@@ -54,6 +63,42 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
       cancelAnimationFrame(autoScrollAnimRef.current);
       autoScrollAnimRef.current = null;
     }
+  }, []);
+
+  const startVerticalAutoScroll = useCallback((speed: number) => {
+    vScrollSpeedRef.current = speed;
+    if (vScrollAnimRef.current === null) {
+      const vStep = () => {
+        if (vScrollSpeedRef.current !== 0) {
+          window.scrollBy(0, vScrollSpeedRef.current);
+          vScrollAnimRef.current = requestAnimationFrame(vStep);
+        } else {
+          vScrollAnimRef.current = null;
+        }
+      };
+      vScrollAnimRef.current = requestAnimationFrame(vStep);
+    }
+  }, []);
+
+  const stopVerticalAutoScroll = useCallback(() => {
+    vScrollSpeedRef.current = 0;
+    if (vScrollAnimRef.current !== null) {
+      cancelAnimationFrame(vScrollAnimRef.current);
+      vScrollAnimRef.current = null;
+    }
+  }, []);
+
+  // Monitor window scroll to show floating "Back to Top" button
+  useEffect(() => {
+    const handleWindowScroll = () => {
+      if (!gridRootRef.current) return;
+      const rect = gridRootRef.current.getBoundingClientRect();
+      // Show button if top of grid is scrolled more than 180px above viewport
+      setShowScrollTop(rect.top < -180 && rect.bottom > 200);
+    };
+
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleWindowScroll);
   }, []);
 
   // Sync ref from parent when NOT drawing
@@ -99,12 +144,13 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   // Commit changes to parent
   const commitChanges = useCallback(() => {
     stopAutoScroll();
+    stopVerticalAutoScroll();
     if (isDrawingRef.current) {
       isDrawingRef.current = false;
       lastTouchKeyRef.current = null;
       onSlotsChange(Array.from(localSlotsRef.current).sort((a, b) => a - b));
     }
-  }, [onSlotsChange, stopAutoScroll]);
+  }, [onSlotsChange, stopAutoScroll, stopVerticalAutoScroll]);
 
   // Quick jump to day column
   const scrollToDay = (dayIndex: number) => {
@@ -115,6 +161,21 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
       const colRect = dayCol.getBoundingClientRect();
       const targetScroll = gridContainerRef.current.scrollLeft + (colRect.left - containerRect.left) - 100;
       gridContainerRef.current.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
+    }
+  };
+
+  // Quick jump to specific time row
+  const scrollToHour = (hour: number) => {
+    if (hour === 0) {
+      if (gridRootRef.current) {
+        gridRootRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
+
+    const rowEl = gridContainerRef.current?.querySelector(`[data-hour-row="${hour}"]`) as HTMLElement;
+    if (rowEl) {
+      rowEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
@@ -149,7 +210,6 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
     const key = `${dayIndex}-${slotInDay}`;
 
     if (touchMode === 'scroll') {
-      // In scroll mode, single tap toggles the cell without dragging
       toggleSlot(dayIndex, slotInDay);
       onSlotsChange(Array.from(localSlotsRef.current).sort((a, b) => a - b));
       return;
@@ -169,7 +229,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
     const touch = e.touches[0];
     if (!touch) return;
 
-    // 1. Horizontal Edge Auto-scroll when dragging near viewport boundaries
+    // 1. Horizontal Edge Auto-scroll when dragging near horizontal container boundaries
     if (gridContainerRef.current) {
       const containerRect = gridContainerRef.current.getBoundingClientRect();
       const EDGE_ZONE = 48; // px threshold
@@ -186,7 +246,19 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
       }
     }
 
-    // 2. Cell painting detection under finger
+    // 2. Vertical Edge Auto-scroll when dragging near viewport top/bottom edges
+    const V_EDGE_ZONE = 70; // px threshold
+    if (touch.clientY < V_EDGE_ZONE) {
+      const intensity = Math.min(1, (V_EDGE_ZONE - touch.clientY) / V_EDGE_ZONE);
+      startVerticalAutoScroll(-Math.max(4, intensity * 16));
+    } else if (touch.clientY > window.innerHeight - V_EDGE_ZONE) {
+      const intensity = Math.min(1, (touch.clientY - (window.innerHeight - V_EDGE_ZONE)) / V_EDGE_ZONE);
+      startVerticalAutoScroll(Math.max(4, intensity * 16));
+    } else {
+      stopVerticalAutoScroll();
+    }
+
+    // 3. Cell painting detection under finger
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
     if (!target) return;
 
@@ -229,25 +301,25 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
 
   return (
     <div
-      className="space-y-3 select-none"
+      ref={gridRootRef}
+      className="space-y-3 select-none relative"
       onMouseLeave={() => {
         if (isDrawingRef.current) commitChanges();
       }}
     >
-      {/* Status & Interaction Controls Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-1">
-        {/* Total Hours Badge */}
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground font-medium">
-          <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span>
-            <strong className="font-mono text-foreground font-bold px-1.5 py-0.5 rounded-sm bg-muted/60 border border-border/80">{totalHoursSelected} hrs</strong> selected
-          </span>
-        </div>
+      {/* Sticky Controls Header: Keeps Mode & Navigation instantly accessible anywhere in the grid */}
+      <div className="sticky top-0 z-30 -mx-1 px-2 py-2 rounded-md bg-card/95 backdrop-blur-md border border-border/70 shadow-xs flex flex-col gap-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Total Hours Badge */}
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground font-medium">
+            <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span>
+              <strong className="font-mono text-foreground font-bold px-1.5 py-0.5 rounded-sm bg-muted/60 border border-border/80">{totalHoursSelected} hrs</strong> selected
+            </span>
+          </div>
 
-        {/* Mobile/Touch Toolbar: Mode Switcher + Day Jump Navigation */}
-        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5">
           {/* Mode Switcher: Paint vs Scroll */}
-          <div className="flex items-center gap-1.5 bg-muted/30 p-1 rounded-md border border-border/50">
+          <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-md border border-border/50">
             <button
               type="button"
               onClick={() => setTouchMode('paint')}
@@ -275,17 +347,20 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
               <span>Pan / Scroll</span>
             </button>
           </div>
+        </div>
 
-          {/* Day Jump Pills (Quick navigation across days) */}
-          <div className="flex items-center gap-1 overflow-x-auto">
-            <span className="text-[11px] font-semibold text-muted-foreground mr-0.5 shrink-0 hidden sm:inline">Jump:</span>
+        {/* Quick-Jump Toolbar (Day & Time Jumps) */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/40 text-xs">
+          {/* Day Jumpers */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+            <span className="text-[10px] font-mono font-bold text-muted-foreground mr-0.5 shrink-0 uppercase tracking-wider">Day:</span>
             {DAYS_OF_WEEK.map((day) => (
               <button
                 key={day.index}
                 type="button"
                 onClick={() => scrollToDay(day.index)}
-                title={`Jump view to ${day.name}`}
-                className={`px-2 py-1 text-[11px] font-bold rounded-sm border cursor-pointer transition-all shrink-0 ${
+                title={`Jump horizontal view to ${day.name}`}
+                className={`px-1.5 py-0.5 text-[11px] font-bold rounded-sm border cursor-pointer transition-all shrink-0 ${
                   day.isWeekend
                     ? 'bg-primary/10 border-primary/25 text-primary hover:bg-primary/20'
                     : 'bg-card border-border hover:border-primary/40 text-foreground'
@@ -294,6 +369,47 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                 {day.shortName}
               </button>
             ))}
+          </div>
+
+          {/* Time Jumpers (Vertical Quick Navigation) */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+            <span className="text-[10px] font-mono font-bold text-muted-foreground mr-0.5 shrink-0 uppercase tracking-wider">Time:</span>
+            <button
+              type="button"
+              onClick={() => scrollToHour(0)}
+              title="Jump to Top (Midnight)"
+              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] font-bold rounded-sm border border-border bg-card hover:border-primary/40 text-foreground cursor-pointer"
+            >
+              <ArrowUp className="w-3 h-3 text-primary" />
+              <span>Top</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToHour(8)}
+              title="Jump to Morning (8:00 AM)"
+              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] font-bold rounded-sm border border-border bg-card hover:border-primary/40 text-foreground cursor-pointer"
+            >
+              <Sun className="w-3 h-3 text-amber-500" />
+              <span>8 AM</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToHour(12)}
+              title="Jump to Afternoon (12:00 PM)"
+              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] font-bold rounded-sm border border-border bg-card hover:border-primary/40 text-foreground cursor-pointer"
+            >
+              <Sunset className="w-3 h-3 text-orange-500" />
+              <span>12 PM</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToHour(18)}
+              title="Jump to Evening (6:00 PM)"
+              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] font-bold rounded-sm border border-border bg-card hover:border-primary/40 text-foreground cursor-pointer"
+            >
+              <Moon className="w-3 h-3 text-indigo-400" />
+              <span>6 PM</span>
+            </button>
           </div>
         </div>
       </div>
@@ -308,8 +424,8 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
           className="overflow-x-auto scrollbar-thin"
         >
           <div className="min-w-[680px]">
-            {/* Day Headers (Sticky Top) */}
-            <div className="grid grid-cols-[100px_repeat(7,1fr)] sticky top-0 z-20 bg-card border-b border-border text-sm font-semibold">
+            {/* Day Headers */}
+            <div className="grid grid-cols-[100px_repeat(7,1fr)] bg-card border-b border-border text-sm font-semibold">
               <div className="p-3 text-center text-muted-foreground border-r border-border/60 flex items-center justify-center bg-card font-mono text-xs uppercase tracking-wider">
                 Time
               </div>
@@ -337,9 +453,17 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                 const timeLabel = formatSlotTime(topSlot, timeFormat);
 
                 return (
-                  <div key={hour} className="grid grid-cols-[100px_repeat(7,1fr)] group hover:bg-muted/10">
-                    {/* Time label column */}
-                    <div className="p-2 text-center text-xs font-mono font-semibold text-muted-foreground tabular-nums whitespace-nowrap border-r border-border/60 flex items-center justify-center bg-card">
+                  <div
+                    key={hour}
+                    data-hour-row={hour}
+                    className="grid grid-cols-[100px_repeat(7,1fr)] group hover:bg-muted/10"
+                  >
+                    {/* Time label column (100px wide touch-scroll track for vertical scrolling) */}
+                    <div
+                      style={{ touchAction: 'pan-y' }}
+                      title="Swipe on this column to scroll up and down"
+                      className="p-2 text-center text-xs font-mono font-semibold text-muted-foreground tabular-nums whitespace-nowrap border-r border-border/60 flex items-center justify-center bg-card select-none"
+                    >
                       {timeLabel}
                     </div>
 
@@ -398,6 +522,28 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
           </div>
         </div>
       </div>
+
+      {/* Floating Action Button: 1-Tap Quick Scroll to Top */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.9 }}
+            transition={{ duration: 0.15 }}
+            className="fixed bottom-5 right-5 z-40"
+          >
+            <button
+              type="button"
+              onClick={() => scrollToHour(0)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg hover:shadow-xl transition-all cursor-pointer border border-primary/20"
+            >
+              <ArrowUp className="w-3.5 h-3.5" />
+              <span>Back to Top</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });
