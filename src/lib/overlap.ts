@@ -195,9 +195,9 @@ export function findOverlappingWindows(
       }
 
       const utcSlots = block.map((b) => b.utcSlot);
-      const availableMemberIds = Array.from(
-        new Set(block.flatMap((b) => b.availableMembers.map((m) => m.id)))
-      );
+      const availableMemberIds = members
+        .filter((m) => utcSlots.every((slot) => m.slotsUtc.includes(slot)))
+        .map((m) => m.id);
       const unavailableMemberIds = members
         .filter((m) => !availableMemberIds.includes(m.id))
         .map((m) => m.id);

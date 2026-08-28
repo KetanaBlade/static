@@ -93,6 +93,7 @@ export const App: React.FC = () => {
   // Filters & Modals
   const [minRatioFilter, setMinRatioFilter] = useState<number>(1.0);
   const [minDurationMinutes, setMinDurationMinutes] = useState<number>(120);
+  const [excludedMemberIds, setExcludedMemberIds] = useState<string[]>([]);
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState<boolean>(false);
   const [isNewGroupModalOpen, setIsNewGroupModalOpen] = useState<boolean>(false);
@@ -295,15 +296,31 @@ export const App: React.FC = () => {
     return success;
   };
 
-  // Calculate Overlapping Windows
+  // Filter active members based on exclusion toggles
+  const activeMembers = React.useMemo(() => {
+    if (!group) return [];
+    return group.members.filter((m) => !excludedMemberIds.includes(m.id));
+  }, [group, excludedMemberIds]);
+
+  const handleToggleExcludeMember = (memberId: string) => {
+    setExcludedMemberIds((prev) =>
+      prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId]
+    );
+  };
+
+  const handleResetExcludedMembers = () => {
+    setExcludedMemberIds([]);
+  };
+
+  // Calculate Overlapping Windows for Active (Included) Members
   const overlappingWindows = React.useMemo(() => {
-    if (!group || group.members.length === 0) return [];
-    return findOverlappingWindows(group.members, viewerTimezone, {
+    if (!group || activeMembers.length === 0) return [];
+    return findOverlappingWindows(activeMembers, viewerTimezone, {
       ...group.settings,
       timeFormat,
       minDurationMinutes,
     });
-  }, [group, viewerTimezone, timeFormat, minDurationMinutes]);
+  }, [group, activeMembers, viewerTimezone, timeFormat, minDurationMinutes]);
 
   const isCreator = group ? isGroupCreator(group.id, group.creatorToken) : false;
   const currentMember = group?.members.find((m) => m.id === currentMemberId) || editingMember;
@@ -535,7 +552,7 @@ export const App: React.FC = () => {
 
                 {!isResultsCollapsed && (
                   <CardContent className="p-6 border-t border-border/40 space-y-6">
-                    {/* Filter & Threshold Bar with Timezone Selector */}
+                    {/* Filter & Threshold Bar with Timezone Selector & Member Exclusions */}
                     <OverlapThresholdFilter
                       viewerTimezone={viewerTimezone}
                       onTimezoneChange={setViewerTimezone}
@@ -543,6 +560,10 @@ export const App: React.FC = () => {
                       onMinRatioChange={setMinRatioFilter}
                       minDurationMinutes={minDurationMinutes}
                       onMinDurationChange={setMinDurationMinutes}
+                      members={group.members}
+                      excludedMemberIds={excludedMemberIds}
+                      onToggleExcludeMember={handleToggleExcludeMember}
+                      onResetExcludedMembers={handleResetExcludedMembers}
                     />
 
                     {/* Ranked Best Hangout Times */}
@@ -558,7 +579,7 @@ export const App: React.FC = () => {
 
               {/* Master Visual Chart */}
               <OverlapHeatmap
-                members={group.members}
+                members={activeMembers}
                 viewerTimezone={viewerTimezone}
                 timeFormat={timeFormat}
                 highlightedMemberId={selectedFilterMemberId}

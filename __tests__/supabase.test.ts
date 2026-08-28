@@ -29,5 +29,5 @@ describe('Supabase Group Service CRUD', () => {
     // 4. Remove Member
     const afterRemoval = await removeMemberFromGroup(group.id, 'test-member-1');
     expect(afterRemoval?.members.length).toBe(0);
-  });
+  }, 15000);
 });

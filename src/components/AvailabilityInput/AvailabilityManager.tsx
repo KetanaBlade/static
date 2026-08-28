@@ -103,14 +103,36 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
     [onSaveMember]
   );
 
-  // Debounced Auto-Save trigger
+  // Handle explicit Step 1 identity submission
+  const handleIdentitySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      nameInputRef.current?.focus();
+      return;
+    }
+    performSave(trimmedName, timezone, slotsUtc);
+    setIsEditingIdentity(false);
+  };
+
+  // Debounced Auto-Save trigger for Step 2 Availability Painting
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
 
+    // Do NOT auto-save while actively editing/typing identity in Step 1!
+    if (isEditingIdentity) {
+      return;
+    }
+
     const trimmedName = name.trim();
+    if (!trimmedName) {
+      setSaveStatus('needs_name');
+      return;
+    }
+
     const hasChanges =
       trimmedName !== lastSavedState.current.name.trim() ||
       timezone !== lastSavedState.current.timezone ||
@@ -120,28 +142,23 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
       return;
     }
 
-    if (!trimmedName) {
-      setSaveStatus('needs_name');
-      return;
-    }
-
     setSaveStatus('saving');
 
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
     }
 
-    // Auto-save after 150ms debounce (very responsive, avoids missing saves)
+    // Auto-save availability modifications (slots painting) after 300ms debounce
     saveTimerRef.current = setTimeout(() => {
-      performSave(name, timezone, slotsUtc);
-    }, 150);
+      performSave(trimmedName, timezone, slotsUtc);
+    }, 300);
 
     return () => {
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current);
       }
     };
-  }, [name, timezone, slotsUtc, performSave]);
+  }, [name, timezone, slotsUtc, isEditingIdentity, performSave]);
 
   const tzAbbr = getTimezoneAbbreviation(timezone);
   const hasValidIdentity = Boolean(name.trim());
@@ -210,7 +227,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
               </div>
             ) : (
               /* Expanded Step 1 Identity Form */
-              <div className="space-y-5" onClick={(e) => e.stopPropagation()}>
+              <form onSubmit={handleIdentitySubmit} className="space-y-5" onClick={(e) => e.stopPropagation()}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label className="text-sm font-bold text-foreground block mb-2">
@@ -261,18 +278,40 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
                   </div>
                 </div>
 
-                {isEditingIdentity && hasValidIdentity && (
-                  <div className="flex justify-end pt-2">
+                {/* Profile Confirmation Action */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                  <p className="text-xs text-muted-foreground font-medium text-center sm:text-left">
+                    {currentMember?.name 
+                      ? 'Update your name or timezone, then click Save.' 
+                      : 'Enter your name and click Save to unlock your weekly availability schedule.'}
+                  </p>
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    {currentMember?.name && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setName(currentMember.name);
+                          setTimezone(currentMember.timezone);
+                          setIsEditingIdentity(false);
+                        }}
+                        className="font-bold h-10 px-4 cursor-pointer"
+                      >
+                        Cancel
+                      </Button>
+                    )}
                     <Button
+                      type="submit"
                       size="sm"
-                      onClick={() => setIsEditingIdentity(false)}
-                      className="font-bold tracking-tight shadow-xs h-10 px-4 cursor-pointer"
+                      disabled={!name.trim()}
+                      className="font-bold tracking-tight shadow-xs h-10 px-5 cursor-pointer w-full sm:w-auto"
                     >
-                      Done Editing
+                      {currentMember?.name ? 'Save Changes' : 'Save & Continue →'}
                     </Button>
                   </div>
-                )}
-              </div>
+                </div>
+              </form>
             )}
           </CardContent>
         )}

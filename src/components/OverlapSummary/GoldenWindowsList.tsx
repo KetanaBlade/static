@@ -5,7 +5,7 @@ import { OverlappingWindow } from '../../types';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Trophy, Clock, Users, Copy, Check, Sparkles, CalendarDays, MessageSquare } from 'lucide-react';
+import { Trophy, Clock, Users, Copy, Check, X, Sparkles, CalendarDays, MessageSquare } from 'lucide-react';
 
 interface GoldenWindowsListProps {
   windows: OverlappingWindow[];
@@ -107,18 +107,44 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
                     </Badge>
                   </div>
 
-                  {/* Attendance badge */}
-                  <div>
-                    {isPerfect ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                        <Sparkles className="w-4 h-4 text-emerald-600" />
-                        100% Match — Everyone Free! ({win.overlapCount}/{win.totalMembers})
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                        <Users className="w-4 h-4 text-amber-600" />
-                        {Math.round(win.overlapRatio * 100)}% Match ({win.overlapCount} of {win.totalMembers} Free)
-                      </span>
+                  {/* Attendance badge & Who's Free / Busy summary */}
+                  <div className="space-y-1.5">
+                    <div>
+                      {isPerfect ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                          <Sparkles className="w-4 h-4 text-emerald-600" />
+                          100% Match — Everyone Free! ({win.overlapCount}/{win.totalMembers})
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                          <Users className="w-4 h-4 text-amber-600" />
+                          {Math.round(win.overlapRatio * 100)}% Match ({win.overlapCount} of {win.totalMembers} Free)
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Explicit list of who is free vs unavailable */}
+                    {!isPerfect && (
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium pt-0.5">
+                        <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <strong>Free:</strong>{' '}
+                          {win.memberBreakdowns
+                            .filter((m) => win.availableMemberIds.includes(m.memberId))
+                            .map((m) => m.memberName)
+                            .join(', ')}
+                        </span>
+                        {win.unavailableMemberIds.length > 0 && (
+                          <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <X className="w-3.5 h-3.5 text-rose-500" />
+                            <strong>Busy:</strong>{' '}
+                            {win.memberBreakdowns
+                              .filter((m) => win.unavailableMemberIds.includes(m.memberId))
+                              .map((m) => m.memberName)
+                              .join(', ')}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -163,28 +189,62 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
 
               {/* Multi-City Member Local Clocks Box */}
               <CardContent className="p-5 sm:p-6 pt-4 bg-muted/20">
-                <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Local Time for Each Member:
+                <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center justify-between">
+                  <span>Local Time for Each Member:</span>
+                  {!isPerfect && (
+                    <span className="text-xs font-normal normal-case text-muted-foreground">
+                      Green = Free • Dimmed = Busy
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                  {win.memberBreakdowns.map((member) => (
-                    <div
-                      key={member.memberId}
-                      className="p-3.5 rounded-xl bg-card border border-border/80 shadow-xs flex flex-col justify-between space-y-1.5"
-                    >
-                      <div className="text-sm sm:text-base font-semibold text-foreground truncate">
-                        {member.memberName}
-                      </div>
-                      <div className="text-sm sm:text-base font-mono font-semibold text-primary tabular-nums">
-                        {member.startTimeFormatted} – {member.endTimeFormatted}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground font-medium flex items-center justify-between">
-                        <span>{member.dayName}</span>
-                        <span className="font-mono text-muted-foreground/90 font-semibold">{member.timezone}</span>
-                      </div>
-                    </div>
-                  ))}
+                  {[...win.memberBreakdowns]
+                    .sort((a, b) => {
+                      const aFree = win.availableMemberIds.includes(a.memberId) ? 0 : 1;
+                      const bFree = win.availableMemberIds.includes(b.memberId) ? 0 : 1;
+                      return aFree - bFree;
+                    })
+                    .map((member) => {
+                      const isMemberFree = win.availableMemberIds.includes(member.memberId);
+
+                      return (
+                        <div
+                          key={member.memberId}
+                          className={`p-3.5 rounded-xl border shadow-xs flex flex-col justify-between space-y-1.5 transition-all ${
+                            isMemberFree
+                              ? 'bg-card border-border/80 ring-1 ring-emerald-500/15'
+                              : 'bg-muted/30 border-dashed border-border/60 opacity-65'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-1.5">
+                            <span className={`text-sm sm:text-base font-semibold truncate ${isMemberFree ? 'text-foreground' : 'text-muted-foreground'}`}>
+                              {member.memberName}
+                            </span>
+                            {isMemberFree ? (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full shrink-0">
+                                <Check className="w-3 h-3 text-emerald-600" />
+                                Free
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full shrink-0">
+                                <X className="w-3 h-3 text-rose-500" />
+                                Busy
+                              </span>
+                            )}
+                          </div>
+
+                          <div className={`text-sm sm:text-base font-mono font-semibold tabular-nums ${isMemberFree ? 'text-primary' : 'text-muted-foreground line-through decoration-rose-500/40'}`}>
+                            {member.startTimeFormatted} – {member.endTimeFormatted}
+                          </div>
+
+                          <div className="text-xs sm:text-sm text-muted-foreground font-medium flex items-center justify-between">
+                            <span>{member.dayName}</span>
+                            <span className="font-mono text-muted-foreground/90 font-semibold">{member.timezone}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </CardContent>
             </Card>

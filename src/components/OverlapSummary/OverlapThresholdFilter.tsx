@@ -1,7 +1,8 @@
 import React from 'react';
 import { POPULAR_TIMEZONES } from '../../lib/constants';
 import { detectUserTimezone, getTimezoneAbbreviation } from '../../lib/timezone';
-import { Users, Clock, Globe, RotateCcw } from 'lucide-react';
+import { GroupMember } from '../../types';
+import { Users, Clock, Globe, RotateCcw, UserCheck, Check, X } from 'lucide-react';
 
 interface OverlapThresholdFilterProps {
   viewerTimezone: string;
@@ -10,6 +11,10 @@ interface OverlapThresholdFilterProps {
   onMinRatioChange: (ratio: number) => void;
   minDurationMinutes: number;
   onMinDurationChange: (minutes: number) => void;
+  members?: GroupMember[];
+  excludedMemberIds?: string[];
+  onToggleExcludeMember?: (memberId: string) => void;
+  onResetExcludedMembers?: () => void;
 }
 
 export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
@@ -19,6 +24,10 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
   onMinRatioChange,
   minDurationMinutes,
   onMinDurationChange,
+  members = [],
+  excludedMemberIds = [],
+  onToggleExcludeMember,
+  onResetExcludedMembers,
 }) => {
   const tzAbbr = getTimezoneAbbreviation(viewerTimezone);
 
@@ -136,6 +145,59 @@ export const OverlapThresholdFilter: React.FC<OverlapThresholdFilterProps> = ({
           </select>
         </div>
       </div>
+
+      {/* Member Filter Chips (Include / Exclude Specific People) */}
+      {members.length > 0 && (
+        <div className="pt-3.5 mt-1 border-t border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs sm:text-sm font-semibold text-muted-foreground flex items-center gap-1.5 shrink-0">
+              <UserCheck className="w-3.5 h-3.5 text-primary" />
+              Include in Schedule:
+            </span>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              {members.map((m) => {
+                const isExcluded = excludedMemberIds.includes(m.id);
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => onToggleExcludeMember?.(m.id)}
+                    title={isExcluded ? `Click to include ${m.name} in results` : `Click to exclude ${m.name} from results`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      isExcluded
+                        ? 'bg-muted/40 border border-dashed border-border text-muted-foreground/60 line-through hover:text-foreground hover:border-border/80'
+                        : 'bg-card border border-primary/30 text-foreground hover:border-primary shadow-xs ring-1 ring-primary/10'
+                    }`}
+                  >
+                    {isExcluded ? (
+                      <X className="w-3 h-3 text-rose-500 shrink-0" />
+                    ) : (
+                      <Check className="w-3 h-3 text-emerald-500 shrink-0" />
+                    )}
+                    <span>{m.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {excludedMemberIds.length > 0 && (
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 px-2.5 py-0.5 rounded-md border border-amber-500/20">
+                {excludedMemberIds.length} excluded
+              </span>
+              <button
+                type="button"
+                onClick={onResetExcludedMembers}
+                className="text-xs font-bold text-primary hover:underline cursor-pointer"
+              >
+                Include All
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

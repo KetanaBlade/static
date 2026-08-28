@@ -44,7 +44,7 @@
   }
 
   .dark {
-    /* Vesper Dark Theme: Pure Obsidian Backdrop with Lifted Graphite Cards & Radiant Peach */
+    /* Obsidian & Graphite with Coral/Peach Red Accents */
     --background: 0 0% 6.3%;    /* #101010 - Pure Obsidian Canvas */
     --foreground: 40 10% 96%;   /* #F7F7F5 - Crisp Warm Off-White */
     
@@ -54,7 +54,7 @@
     --popover: 0 0% 10%;
     --popover-foreground: 40 10% 96%;
     
-    --primary: 15 100% 67%;     /* #FF7A59 - Signature Vesper Radiant Peach */
+    --primary: 6 78% 62%;       /* #EF6453 - Red Peachy / Coral Red Accent */
     --primary-foreground: 0 0% 100%;
     
     --secondary: 0 0% 14%;      /* #242424 */
@@ -71,7 +71,7 @@
     
     --border: 0 0% 16%;         /* #292929 - Crisp Graphite Border */
     --input: 0 0% 10%;
-    --ring: 15 100% 67%;
+    --ring: 6 78% 62%;
     
     --radius: 0.75rem;
   }
@@ -96,7 +96,7 @@
   
   /* Depth Layer: Dark Mode Asymmetrical Abstract Lines & Diamond Nodes */
   .dark body::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cg fill='none' stroke='%23FF7A59' stroke-width='1.5' stroke-opacity='0.12'%3E%3Cpath d='M-200 200 L1200 800'/%3E%3Cpath d='M800 -200 L200 1200'/%3E%3Cpath d='M-100 800 L1100 500'/%3E%3Cpath d='M300 1200 L600 -100'/%3E%3Cpath d='M0 600 L1000 200'/%3E%3Cpath d='M200 50 L800 950'/%3E%3Cpath d='M470 380 L620 530 L380 620 Z' stroke-opacity='0.07'/%3E%3C/g%3E%3Cg fill='%23FF7A59' fill-opacity='0.35'%3E%3Cpolygon points='470,370 480,380 470,390 460,380'/%3E%3Cpolygon points='620,520 630,530 620,540 610,530'/%3E%3Cpolygon points='380,610 390,620 380,630 370,620'/%3E%3Cpolygon points='230,380 240,390 230,400 220,390'/%3E%3Cpolygon points='750,750 760,760 750,770 740,760'/%3E%3Cpolygon points='820,270 830,280 820,290 810,280'/%3E%3Cpolygon points='100,560 110,570 100,580 90,570'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cg fill='none' stroke='%23EF6453' stroke-width='1.5' stroke-opacity='0.14'%3E%3Cpath d='M-200 200 L1200 800'/%3E%3Cpath d='M800 -200 L200 1200'/%3E%3Cpath d='M-100 800 L1100 500'/%3E%3Cpath d='M300 1200 L600 -100'/%3E%3Cpath d='M0 600 L1000 200'/%3E%3Cpath d='M200 50 L800 950'/%3E%3Cpath d='M470 380 L620 530 L380 620 Z' stroke-opacity='0.08'/%3E%3C/g%3E%3Cg fill='%23EF6453' fill-opacity='0.4'%3E%3Cpolygon points='470,370 480,380 470,390 460,380'/%3E%3Cpolygon points='620,520 630,530 620,540 610,530'/%3E%3Cpolygon points='380,610 390,620 380,630 370,620'/%3E%3Cpolygon points='230,380 240,390 230,400 220,390'/%3E%3Cpolygon points='750,750 760,760 750,770 740,760'/%3E%3Cpolygon points='820,270 830,280 820,290 810,280'/%3E%3Cpolygon points='100,560 110,570 100,580 90,570'/%3E%3C/g%3E%3C/svg%3E");
     background-size: cover;
     background-position: center;
   }
