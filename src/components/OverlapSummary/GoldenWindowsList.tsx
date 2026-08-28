@@ -58,19 +58,14 @@ export const GoldenWindowsList: React.FC<GoldenWindowsListProps> = ({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
-        <div>
-          <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2 text-foreground">
-            <Trophy className="w-5 h-5 text-amber-500" />
-            Top Matching Hangout Times
-          </h3>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Times below are displayed in <strong className="text-foreground font-semibold">{tzAbbr}</strong> ({viewerTimezone}).
-          </p>
-        </div>
-        <Badge variant="outline" className="text-xs sm:text-sm font-semibold self-start sm:self-auto tabular-nums bg-card px-2.5 py-0.5">
-          {filteredWindows.length} {filteredWindows.length === 1 ? 'window' : 'windows'} found
+    <div className="space-y-4 pt-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-border/40">
+        <h3 className="text-xl sm:text-2xl font-extrabold flex items-center gap-2.5 text-foreground tracking-tight">
+          <Trophy className="w-6 h-6 text-amber-500" />
+          Top Matching Times
+        </h3>
+        <Badge variant="outline" className="text-sm font-bold uppercase tracking-wider bg-card px-3 py-1 text-muted-foreground border-border">
+          {filteredWindows.length} {filteredWindows.length === 1 ? 'Match' : 'Matches'}
         </Badge>
       </div>
 

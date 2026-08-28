@@ -164,40 +164,6 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
-            {/* Mode Switcher Tabs (Visible when identity is set and expanded) */}
-            {hasValidIdentity && !isCollapsed && (
-              <div className="inline-flex rounded-xl border border-border bg-muted/60 p-1 shadow-inner" role="tablist" aria-label="Input mode">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={inputMode === 'grid'}
-                  onClick={() => setInputMode('grid')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
-                    inputMode === 'grid'
-                      ? 'bg-primary text-primary-foreground shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                  Grid
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={inputMode === 'ranges'}
-                  onClick={() => setInputMode('ranges')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
-                    inputMode === 'ranges'
-                      ? 'bg-primary text-primary-foreground shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <ListPlus className="w-3.5 h-3.5" />
-                  Form
-                </button>
-              </div>
-            )}
-
             {/* Collapsible Toggle Button */}
             {hasValidIdentity && (
               <button
@@ -351,9 +317,41 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
       {/* ================= STEP 2: CHOOSE FREE HOURS ================= */}
       {!isCollapsed && hasValidIdentity && (
         <CardContent className="p-6 sm:p-7 space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="text-xs sm:text-sm font-bold text-muted-foreground tracking-wider uppercase">
               Step 2: Select Your Free Hours
+            </div>
+            
+            {/* Mode Switcher Tabs */}
+            <div className="inline-flex rounded-md border border-border bg-card p-0.5 shadow-sm" role="tablist" aria-label="Input mode">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={inputMode === 'grid'}
+                onClick={() => setInputMode('grid')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-sm tracking-tight transition-colors cursor-pointer ${
+                  inputMode === 'grid'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                Grid
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={inputMode === 'ranges'}
+                onClick={() => setInputMode('ranges')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-sm tracking-tight transition-colors cursor-pointer ${
+                  inputMode === 'ranges'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <ListPlus className="w-3.5 h-3.5" />
+                Form
+              </button>
             </div>
           </div>
 

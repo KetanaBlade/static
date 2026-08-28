@@ -11,6 +11,7 @@ interface OverlapHeatmapProps {
   viewerTimezone: string;
   timeFormat?: '12h' | '24h';
   highlightedMemberId?: string | null;
+  minRatioFilter: number;
 }
 
 interface HoverTooltipState {
@@ -29,6 +30,7 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
   viewerTimezone,
   timeFormat = '12h',
   highlightedMemberId,
+  minRatioFilter,
 }) => {
   const totalMembers = members.length;
   const [hoverInfo, setHoverInfo] = useState<HoverTooltipState | null>(null);
@@ -62,11 +64,9 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
     }
 
     if (count === 0 || ratio === 0) return 'bg-transparent hover:bg-muted/40';
-    if (ratio === 1) return 'bg-emerald-500 text-white font-semibold shadow-sm shadow-emerald-500/20';
-    if (ratio >= 0.75) return 'bg-emerald-600/80 text-emerald-100 font-medium';
-    if (ratio >= 0.5) return 'bg-teal-600/60 text-teal-100';
-    return 'bg-teal-900/40 text-teal-300';
-  }, [highlightedMemberId]);
+    if (ratio >= minRatioFilter) return 'bg-emerald-500 text-emerald-950 font-bold shadow-xs';
+    return 'bg-muted text-muted-foreground opacity-60'; // Gray for selected but non-overlapping
+  }, [highlightedMemberId, minRatioFilter]);
 
   const handleCellMouseEnter = (
     e: React.MouseEvent<HTMLDivElement>,
@@ -92,30 +92,29 @@ export const OverlapHeatmap: React.FC<OverlapHeatmapProps> = React.memo(({
   };
 
   return (
-    <Card className="border-border bg-card shadow-sm relative">
-      <CardHeader className="p-6 sm:p-7 pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+    <Card className="border border-border bg-card shadow-sm rounded-lg relative">
+      <CardHeader className="p-6 pb-4 border-b border-border/40 bg-muted/20">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <CardTitle className="text-xl sm:text-2xl font-semibold flex items-center gap-2.5 text-foreground">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <Layers className="w-5 h-5 text-primary" />
-              Group Availability Heatmap
+              Group Availability Chart
             </CardTitle>
-            <CardDescription className="text-sm sm:text-base text-muted-foreground mt-1">
-              Color intensity represents the percentage of group members free at that time (in your timezone).
+            <CardDescription className="text-sm font-medium text-muted-foreground mt-1.5">
+              See the exact schedule overlaps for your group (in your timezone).
             </CardDescription>
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground self-start sm:self-auto">
-            <span>0%</span>
-            <div className="flex gap-1">
-              <div className="w-4 h-4 rounded-sm border border-border/80 bg-card" />
-              <div className="w-4 h-4 rounded-sm bg-teal-900/40" />
-              <div className="w-4 h-4 rounded-sm bg-teal-600/60" />
-              <div className="w-4 h-4 rounded-sm bg-emerald-600/80" />
-              <div className="w-4 h-4 rounded-sm bg-emerald-500 shadow-xs" />
+          <div className="flex items-center gap-3 text-xs font-bold tracking-tight text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 rounded-sm bg-muted opacity-60" />
+              <span>Some Free</span>
             </div>
-            <span>100% Free</span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 rounded-sm bg-emerald-500 shadow-xs" />
+              <span className="text-foreground">Match ({Math.round(minRatioFilter * 100)}%+)</span>
+            </div>
           </div>
         </div>
       </CardHeader>

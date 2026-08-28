@@ -541,6 +541,7 @@ export const App: React.FC = () => {
                   viewerTimezone={viewerTimezone}
                   timeFormat={timeFormat}
                   highlightedMemberId={selectedFilterMemberId}
+                  minRatioFilter={minRatioFilter}
                 />
               </div>
             </section>
