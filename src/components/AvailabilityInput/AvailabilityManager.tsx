@@ -75,18 +75,34 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
   const isInitialMount = useRef<boolean>(true);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  const prevMemberIdRef = useRef<string | undefined>(currentMember?.id);
+
   // When switching member or loading member from outside
   useEffect(() => {
     if (currentMember) {
-      setName(currentMember.name);
-      setTimezone(currentMember.timezone);
-      setSlotsUtc(currentMember.slotsUtc);
+      if (currentMember.id !== prevMemberIdRef.current) {
+        prevMemberIdRef.current = currentMember.id;
+        setName(currentMember.name);
+        setTimezone(currentMember.timezone);
+        setSlotsUtc(currentMember.slotsUtc);
+        lastSavedState.current = {
+          name: currentMember.name,
+          timezone: currentMember.timezone,
+          slotsUtc: currentMember.slotsUtc,
+        };
+        setSaveStatus('saved');
+        setIsEditingIdentity(false);
+      }
+    } else if (prevMemberIdRef.current !== undefined) {
+      prevMemberIdRef.current = undefined;
+      setName('');
+      setSlotsUtc([]);
       lastSavedState.current = {
-        name: currentMember.name,
-        timezone: currentMember.timezone,
-        slotsUtc: currentMember.slotsUtc,
+        name: '',
+        timezone: detectUserTimezone(),
+        slotsUtc: [],
       };
-      setSaveStatus('saved');
+      setSaveStatus('idle');
       setIsEditingIdentity(false);
     }
   }, [currentMember]);

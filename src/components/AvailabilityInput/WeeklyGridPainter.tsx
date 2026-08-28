@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { DAYS_OF_WEEK, HOURS_PER_DAY, SLOTS_PER_HOUR } from '../../lib/constants';
 import { formatSlotTime, localToUtcSlot, utcToLocalSlot } from '../../lib/timezone';
 import { SlotIndex } from '../../types';
@@ -17,20 +17,22 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
   onSlotsChange,
   timeFormat = '12h',
 }) => {
-  const [isDrawing, setIsDrawing] = useState<boolean>(false);
-  const [drawMode, setDrawMode] = useState<'select' | 'erase'>('select');
   const gridContainerRef = useRef<HTMLDivElement>(null);
 
   const localSlotsRef = useRef<Set<number>>(new Set(currentSlots));
+  const isDrawingRef = useRef<boolean>(false);
+  const drawModeRef = useRef<'select' | 'erase'>('select');
+  const lastTouchKeyRef = useRef<string | null>(null);
+  const lastTouchTimestampRef = useRef<number>(0);
   const [localRender, setLocalRender] = useState(0); // Forces local UI updates during drag
 
   // Sync ref from parent when NOT drawing
-  React.useEffect(() => {
-    if (!isDrawing) {
+  useEffect(() => {
+    if (!isDrawingRef.current) {
       localSlotsRef.current = new Set(currentSlots);
-      setLocalRender(r => r + 1); // Ensure local UI matches new parent state
+      setLocalRender((r) => r + 1);
     }
-  }, [currentSlots, isDrawing]);
+  }, [currentSlots]);
 
   // Set of active local slots for fast O(1) lookup during render
   const activeLocalSlots = React.useMemo(() => {
@@ -40,7 +42,7 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
       set.add(`${dayIndex}-${slotInDay}`);
     }
     return set;
-  }, [timezone, localRender]); // Recomputes instantly on localRender
+  }, [timezone, localRender]);
 
   const toggleSlot = useCallback(
     (dayIndex: number, slotInDay: number, forceMode?: 'select' | 'erase') => {
@@ -58,59 +60,111 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
       }
 
       if (changed) {
-        // FAST LOCAL UPDATE ONLY: Do NOT call onSlotsChange here!
-        // This prevents the main thread from blocking on App-level reconciliations during a fast drag.
-        setLocalRender(r => r + 1);
+        setLocalRender((r) => r + 1);
       }
     },
     [timezone]
   );
 
-  const handleMouseDown = (dayIndex: number, slotInDay: number) => {
+  // Commit changes to parent
+  const commitChanges = useCallback(() => {
+    if (isDrawingRef.current) {
+      isDrawingRef.current = false;
+      lastTouchKeyRef.current = null;
+      onSlotsChange(Array.from(localSlotsRef.current).sort((a, b) => a - b));
+    }
+  }, [onSlotsChange]);
+
+  // Mouse handlers (Desktop)
+  const handleMouseDown = (e: React.MouseEvent, dayIndex: number, slotInDay: number) => {
+    // Ignore synthetic mouse events generated right after a touch
+    if (Date.now() - lastTouchTimestampRef.current < 600 || e.button !== 0) {
+      return;
+    }
+
     const key = `${dayIndex}-${slotInDay}`;
     const mode = activeLocalSlots.has(key) ? 'erase' : 'select';
-    
-    setIsDrawing(true);
-    setDrawMode(mode);
+
+    isDrawingRef.current = true;
+    drawModeRef.current = mode;
+    lastTouchKeyRef.current = key;
+
     toggleSlot(dayIndex, slotInDay, mode);
   };
 
   const handleMouseEnter = (dayIndex: number, slotInDay: number) => {
-    if (!isDrawing) return;
-    toggleSlot(dayIndex, slotInDay, drawMode);
-  };
-
-  const handleMouseUp = () => {
-    if (isDrawing) {
-      setIsDrawing(false);
-      // Now that the drag is over, dispatch the fully accumulated array to the parent to save/sync
-      onSlotsChange(Array.from(localSlotsRef.current).sort((a, b) => a - b));
+    if (!isDrawingRef.current) return;
+    const key = `${dayIndex}-${slotInDay}`;
+    if (key !== lastTouchKeyRef.current) {
+      lastTouchKeyRef.current = key;
+      toggleSlot(dayIndex, slotInDay, drawModeRef.current);
     }
   };
 
-  // Touch support for mobile dragging
+  // Touch handlers (Mobile)
+  const handleTouchStartCell = (dayIndex: number, slotInDay: number) => {
+    lastTouchTimestampRef.current = Date.now();
+    const key = `${dayIndex}-${slotInDay}`;
+    const mode = activeLocalSlots.has(key) ? 'erase' : 'select';
+
+    isDrawingRef.current = true;
+    drawModeRef.current = mode;
+    lastTouchKeyRef.current = key;
+
+    toggleSlot(dayIndex, slotInDay, mode);
+  };
+
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDrawing) return;
+    if (!isDrawingRef.current) return;
     const touch = e.touches[0];
+    if (!touch) return;
+
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
     if (!target) return;
 
-    const dayStr = target.getAttribute('data-day');
-    const slotStr = target.getAttribute('data-slot');
+    const cell = (target as HTMLElement).closest('[data-day][data-slot]');
+    if (!cell) return;
+
+    const dayStr = cell.getAttribute('data-day');
+    const slotStr = cell.getAttribute('data-slot');
     if (dayStr !== null && slotStr !== null) {
       const d = parseInt(dayStr, 10);
       const s = parseInt(slotStr, 10);
-      toggleSlot(d, s, drawMode);
+      const key = `${d}-${s}`;
+      if (key !== lastTouchKeyRef.current) {
+        lastTouchKeyRef.current = key;
+        toggleSlot(d, s, drawModeRef.current);
+      }
     }
   };
+
+  // Global pointer release safety
+  useEffect(() => {
+    const handleGlobalEnd = () => {
+      if (isDrawingRef.current) {
+        commitChanges();
+      }
+    };
+
+    window.addEventListener('mouseup', handleGlobalEnd);
+    window.addEventListener('touchend', handleGlobalEnd);
+    window.addEventListener('touchcancel', handleGlobalEnd);
+
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalEnd);
+      window.removeEventListener('touchend', handleGlobalEnd);
+      window.removeEventListener('touchcancel', handleGlobalEnd);
+    };
+  }, [commitChanges]);
 
   const totalHoursSelected = (localSlotsRef.current.size * 0.5).toFixed(1);
 
   return (
     <div
       className="space-y-3 select-none"
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      onMouseLeave={() => {
+        if (isDrawingRef.current) commitChanges();
+      }}
     >
       {/* Minimalist Status & Guide Strip */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs sm:text-sm text-muted-foreground font-medium">
@@ -132,7 +186,8 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
         <div
           ref={gridContainerRef}
           onTouchMove={handleTouchMove}
-          onTouchEnd={handleMouseUp}
+          onTouchEnd={commitChanges}
+          onTouchCancel={commitChanges}
           className="overflow-x-auto"
         >
           <div className="min-w-[680px]">
@@ -188,10 +243,12 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                           <div
                             data-day={day.index}
                             data-slot={topSlot}
-                            onMouseDown={() => handleMouseDown(day.index, topSlot)}
+                            onMouseDown={(e) => handleMouseDown(e, day.index, topSlot)}
                             onMouseEnter={() => handleMouseEnter(day.index, topSlot)}
+                            onTouchStart={() => handleTouchStartCell(day.index, topSlot)}
                             title={`${day.name} ${formatSlotTime(topSlot, timeFormat)}`}
-                            className={`h-6 border-b border-border/20 cursor-pointer transition-colors ${
+                            style={{ touchAction: 'none' }}
+                            className={`h-6 border-b border-border/20 cursor-pointer select-none ${
                               isTopActive
                                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                                 : 'hover:bg-primary/25'
@@ -202,10 +259,12 @@ export const WeeklyGridPainter: React.FC<WeeklyGridPainterProps> = React.memo(({
                           <div
                             data-day={day.index}
                             data-slot={bottomSlot}
-                            onMouseDown={() => handleMouseDown(day.index, bottomSlot)}
+                            onMouseDown={(e) => handleMouseDown(e, day.index, bottomSlot)}
                             onMouseEnter={() => handleMouseEnter(day.index, bottomSlot)}
+                            onTouchStart={() => handleTouchStartCell(day.index, bottomSlot)}
                             title={`${day.name} ${formatSlotTime(bottomSlot, timeFormat)}`}
-                            className={`h-6 cursor-pointer transition-colors ${
+                            style={{ touchAction: 'none' }}
+                            className={`h-6 cursor-pointer select-none ${
                               isBottomActive
                                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                                 : 'hover:bg-primary/25'

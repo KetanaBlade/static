@@ -543,7 +543,6 @@ export const App: React.FC = () => {
             {/* SECTION 1: TOP ENTRY (Your Weekly Availability) */}
             <section aria-labelledby="section-availability">
               <AvailabilityManager
-                key={currentMember?.id || 'new'}
                 currentMember={currentMember}
                 onSaveMember={handleSaveMember}
                 timeFormat={timeFormat}
