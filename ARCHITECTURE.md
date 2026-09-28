@@ -1,4 +1,4 @@
-﻿# Static — Technical Architecture & Engineering Documentation
+# Static — Technical Architecture & Engineering Documentation
 
 This document provides in-depth technical documentation of the core systems powering **Static**, including the deterministic timezone calculation engine, Supabase real-time multi-client synchronization, data flow, and design system tokens.
 
@@ -105,6 +105,8 @@ Because the Discord client parses `<t:UNIX:t>` natively against the local device
 ---
 
 ## 4. Design System & Typographic Scale
+
+For the comprehensive design specification, color palette, radius scale, and animation guidelines, see [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md).
 
 Static adheres to a strict 5-tier typographic hierarchy designed with **Space Grotesk** for geometric readability and **JetBrains Mono** for tabular numbers and timestamps:
 

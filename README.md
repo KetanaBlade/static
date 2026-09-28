@@ -46,7 +46,8 @@
 
 ## 🏗️ Architecture & Technical Design
 
-For an in-depth breakdown of timezone algorithms, Supabase schemas, and UI design tokens, see [ARCHITECTURE.md](./ARCHITECTURE.md).
+For an in-depth breakdown of timezone algorithms, Supabase schemas, and data flow, see [ARCHITECTURE.md](./ARCHITECTURE.md).
+For color tokens, typography tiers, radius scales, and component patterns, see [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md).
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
